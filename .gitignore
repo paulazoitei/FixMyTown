@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### FLUTTER ###
+/frontend/.dart_tool/
+/frontend/.idea/
+/frontend/.packages
+/frontend/build/
+/frontend/flutter_*
