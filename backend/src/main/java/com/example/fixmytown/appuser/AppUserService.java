@@ -1,9 +1,10 @@
+
 package com.example.fixmytown.appuser;
 
 import com.example.fixmytown.registration.ConfirmationEmailService;
-import com.example.fixmytown.registration.RegistrationService;
 import com.example.fixmytown.registration.token.ConfirmationToken;
 import com.example.fixmytown.registration.token.ConfirmationTokenService;
+import com.example.fixmytown.security.jwt.JwtService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -24,16 +24,15 @@ public class AppUserService implements UserDetailsService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final ConfirmationTokenService confirmationTokenService;
     private final ConfirmationEmailService confirmationEmailService;
-
+    private final JwtService jwtService;
 
     @Override
-public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-    System.out.println("Trying to load user: " + email);
-    return appUserRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG, email)));
-}
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return appUserRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG, email)));
+    }
 
-    public String signUpUser(AppUser appUser){
+    public String signUpUser(AppUser appUser) {
         Optional<AppUser> userOptional = appUserRepository.findByEmail(appUser.getEmail());
 
         if (userOptional.isPresent()) {
@@ -44,6 +43,12 @@ public UserDetails loadUserByUsername(String email) throws UsernameNotFoundExcep
 
             if (!existingUser.isEnabled()) {
                 if (sameAttributes) {
+                    ConfirmationToken latestToken = confirmationTokenService.getLatestTokenForUser(existingUser);
+
+                    if (latestToken != null &&
+                            latestToken.getCreatedAt().isAfter(LocalDateTime.now().minusMinutes(1/6))) {
+                        throw new IllegalStateException("Confirmation email already sent recently. Please wait before trying again.");
+                    }
 
                     return confirmationEmailService.resendConfirmationEmail(existingUser);
                 } else {
@@ -53,26 +58,16 @@ public UserDetails loadUserByUsername(String email) throws UsernameNotFoundExcep
 
             throw new IllegalStateException("email already taken");
         }
+
         String encodedPassword = bCryptPasswordEncoder.encode(appUser.getPassword());
         appUser.setPassword(encodedPassword);
-
         appUserRepository.save(appUser);
-        String token = UUID.randomUUID().toString();
-        ConfirmationToken confirmationToken = new ConfirmationToken(
-                token,
-                LocalDateTime.now(),
-                LocalDateTime.now().plusMinutes(15),
-                appUser
-        );
-        confirmationTokenService.saveConfirmationToken(confirmationToken);
 
+        String token = jwtService.generateToken(appUser.getEmail(), 15);
         return token;
     }
-
 
     public int enableAppUser(String email) {
         return appUserRepository.enableAppUser(email);
     }
-
-
 }

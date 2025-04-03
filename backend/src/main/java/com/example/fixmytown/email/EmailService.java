@@ -28,7 +28,7 @@ public class EmailService implements EmailSender{
             helper.setText(email, true);
             helper.setTo(to);
             helper.setSubject("Confirm your email");
-            helper.setFrom("app.fixmytown@gmail.com");
+            helper.setFrom("FixMyTown <no-reply@test-68zxl27r6034j905.mlsender.net>");
             mailSender.send(message);
         }catch (MessagingException e){
             LOGGER.error("failed to send email", e);

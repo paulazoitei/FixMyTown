@@ -1,5 +1,6 @@
 package com.example.fixmytown.registration.token;
 
+import com.example.fixmytown.appuser.AppUser;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -12,6 +13,7 @@ import java.util.Optional;
 @Repository
 public interface ConifirmationTokenRepository  extends JpaRepository<ConfirmationToken, Long> {
     Optional<ConfirmationToken> findByToken(String token);
+    Optional<ConfirmationToken> findTopByAppUserOrderByCreatedAtDesc(AppUser user);
 
     @Transactional
     @Modifying
@@ -19,4 +21,7 @@ public interface ConifirmationTokenRepository  extends JpaRepository<Confirmatio
             "SET c.confirmedAt = ?2 " +
             "WHERE c.token = ?1")
     int updateConfirmedAt(String token, LocalDateTime now);
+    @Transactional
+    void deleteAllByExpiresAtBeforeAndConfirmedAtIsNull(LocalDateTime time);
+
 }

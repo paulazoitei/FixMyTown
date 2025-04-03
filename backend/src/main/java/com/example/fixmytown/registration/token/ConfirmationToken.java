@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Date;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -52,4 +54,6 @@ public class ConfirmationToken {
         this.createdAt = createdAt;
         this.appUser=appUser;
     }
+
+
 }

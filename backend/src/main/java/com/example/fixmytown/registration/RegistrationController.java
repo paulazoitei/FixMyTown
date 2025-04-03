@@ -1,6 +1,7 @@
+
+
 package com.example.fixmytown.registration;
-import com.example.fixmytown.registration.RegistrationRequest;
-import com.example.fixmytown.registration.RegistrationService;
+
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,5 +21,4 @@ public class RegistrationController {
     public String confirm(@RequestParam("token") String token) {
         return registrationService.confirmToken(token);
     }
-
 }
