@@ -73,4 +73,6 @@ public UserDetails loadUserByUsername(String email) throws UsernameNotFoundExcep
     public int enableAppUser(String email) {
         return appUserRepository.enableAppUser(email);
     }
+
+
 }
