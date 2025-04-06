@@ -10,9 +10,7 @@ public class FixMyTownApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(FixMyTownApplication.class, args);
-
-
-
+        
     }
 
 }
