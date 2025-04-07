@@ -67,7 +67,7 @@ public String resendConfirmationEmail(AppUser appUser) {
     }
 
 
-    String token = jwtService.generateToken(userFromDb.getEmail(), 15); // 15 minute
+    String token = jwtService.generateEmailConfirmationToken(userFromDb.getEmail()); // 15 minute
 
     LocalDateTime expiration = jwtService.extractExpiration(token)
             .toInstant()
@@ -83,7 +83,7 @@ public String resendConfirmationEmail(AppUser appUser) {
     confirmationTokenService.saveConfirmationToken(confirmationToken);
 
     String link = "http://localhost:8081/api/v1/registration/confirm?token=" + token;
-    emailSender.send(userFromDb.getEmail(), buildEmail(userFromDb.getFirstName(), link));
+    emailSender.send(userFromDb.getEmail(), buildEmail(userFromDb.getFirstName(), link),"Confirm your email");
 
     return token;
 }

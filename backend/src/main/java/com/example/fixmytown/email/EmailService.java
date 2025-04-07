@@ -20,14 +20,14 @@ public class EmailService implements EmailSender{
     private final JavaMailSender mailSender;
     @Async
     @Override
-    public void send(String to, String email) {
+    public void send(String to, String email,String subject) {
 
         try{
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
             helper.setText(email, true);
             helper.setTo(to);
-            helper.setSubject("Confirm your email");
+            helper.setSubject(subject);
             helper.setFrom("FixMyTown <no-reply@test-68zxl27r6034j905.mlsender.net>");
             mailSender.send(message);
         }catch (MessagingException e){

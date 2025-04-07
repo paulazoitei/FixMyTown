@@ -63,7 +63,8 @@ public class AppUserService implements UserDetailsService {
         appUser.setPassword(encodedPassword);
         appUserRepository.save(appUser);
 
-        String token = jwtService.generateToken(appUser.getEmail(), 15);
+        String token = jwtService.generateEmailConfirmationToken(appUser.getEmail());
+
         return token;
     }
 

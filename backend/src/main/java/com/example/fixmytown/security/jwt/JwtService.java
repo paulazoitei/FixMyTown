@@ -66,12 +66,13 @@ public class JwtService {
     private static final String SECRET_KEY = "12345678901234567890123456789012"; // 32+ chars
     private static final Key KEY = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
-    public String generateToken(String email, int expirationMinutes) {
+    public String generateToken(String email, int expirationMinutes, String type) {
         Instant now = Instant.now();
         Instant expiration = now.plusSeconds(expirationMinutes * 60L);
 
         return Jwts.builder()
                 .subject(email)
+                .claim("type", type)
                 .claim("jti", UUID.randomUUID().toString())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiration))
@@ -79,9 +80,22 @@ public class JwtService {
                 .compact();
     }
 
-    public String generateLoginToken(String email) {
-        return generateToken(email, 60 * 10); // 10 ore
+
+    public String generateEmailConfirmationToken(String email) {
+        return generateToken(email, 15, "EMAIL_CONFIRMATION");
     }
+
+    public String generatePasswordResetToken(String email) {
+        return generateToken(email, 15, "PASSWORD_RESET");
+    }
+
+//    public String generateLoginToken(String email) {
+//        return generateToken(email, 60 * 10, "LOGIN");
+//    }
+public String generateLoginToken(String email) {
+    return generateToken(email, 1, "LOGIN");
+}
+
 
     public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -113,4 +127,8 @@ public class JwtService {
                 .parseSignedClaims(token)
                 .getPayload();
     }
+    public String extractTokenType(String token) {
+        return extractClaim(token, claims -> claims.get("type", String.class));
+    }
+
 }
