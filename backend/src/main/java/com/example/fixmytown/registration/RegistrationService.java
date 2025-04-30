@@ -12,6 +12,7 @@ import com.example.fixmytown.registration.token.ConfirmationTokenService;
 import com.example.fixmytown.security.jwt.JwtService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,6 +29,7 @@ public class RegistrationService {
     private final AppUserRepository appUserRepository;
     private final AppUserRepository userRepository;
     private final ConfirmationEmailService confirmationEmailService;
+
 
     public String register(RegistrationRequest request) {
         boolean isValidEmail = emailValidator.test(request.getEmail());
@@ -65,7 +67,7 @@ public class RegistrationService {
             confirmationTokenService.saveConfirmationToken(confirmationToken);
         }
 
-        String link = "http://localhost:8081/api/v1/registration/confirm?token=" + token;
+        String link = "http://192.168.56.1:8081/api/v1/registration/confirm?token=" + token;
         emailSender.send(request.getEmail(), buildEmail(savedUser.getFirstName(), link), "Confirm your email");
 
         return token;
