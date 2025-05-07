@@ -18,11 +18,19 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   Future<void> _loginToBackend() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      _showDialog("Login failed", "Please fill in both email and password.");
+      return;
+    }
+
     final url = Uri.parse("http://10.0.2.2:8081/api/v1/auth/login");
 
     final body = {
-      "email": _emailController.text.trim(),
-      "password": _passwordController.text,
+      "email": email,
+      "password": password,
     };
 
     try {
@@ -43,8 +51,12 @@ class _LoginScreenState extends State<LoginScreen> {
           context,
           MaterialPageRoute(builder: (_) => const HomeScreen()),
         );
+      } else if (response.statusCode == 403 || response.statusCode == 401) {
+        _showDialog("Login failed", "Invalid email or password.");
       } else {
-        _showDialog("Login failed", response.body);
+        final responseBody = jsonDecode(response.body);
+        final message = responseBody['message'] ?? "Something went wrong.";
+        _showDialog("Login failed", "Invalid email or password.");
       }
     } catch (e) {
       _showDialog("Connection error", "Could not reach server.");
@@ -93,6 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 40),
                 TextField(
                   controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     hintText: 'Email',
                     hintStyle: const TextStyle(color: Colors.black54),
@@ -136,14 +149,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       elevation: 6,
                     ).copyWith(
-                      overlayColor:
-                      MaterialStateProperty.all(Colors.transparent),
+                      overlayColor: MaterialStateProperty.all(Colors.transparent),
                       splashFactory: NoSplash.splashFactory,
                     ),
                     child: const Text(
                       "LOGIN",
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
@@ -158,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       "Forgot your password?",
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 18,
                       ),
                     ),
                     TextButton(
@@ -173,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         "Reset",
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 17,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -187,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       "Don't have an account?",
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 18,
                       ),
                     ),
                     TextButton(
@@ -202,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         "Register",
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 17,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

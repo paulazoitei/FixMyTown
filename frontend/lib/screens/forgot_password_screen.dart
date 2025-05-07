@@ -1,7 +1,49 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-class ForgotPasswordScreen extends StatelessWidget {
+class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
+
+  @override
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+}
+
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final TextEditingController _emailController = TextEditingController();
+
+  Future<void> _sendResetLink() async {
+    final url = Uri.parse("http://10.0.2.2:8081/api/v1/auth/forgot-password");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"email": _emailController.text.trim()}),
+      );
+
+      if (response.statusCode == 200) {
+        _showDialog("Success", "The password reset link has been sent to your email..");
+      } else {
+        _showDialog("Eroare", response.body);
+      }
+    } catch (e) {
+      _showDialog("Eroare de conexiune", "Nu s-a putut trimite cererea.");
+    }
+  }
+
+  void _showDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +69,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                   child: Text(
                     "Forgot Password",
                     style: TextStyle(
-                      fontSize: 26,
+                      fontSize: 27,
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
@@ -35,13 +77,14 @@ class ForgotPasswordScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 40),
                 TextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     hintText: 'Enter your email',
                     hintStyle: const TextStyle(color: Colors.black54),
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -53,24 +96,18 @@ class ForgotPasswordScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: () {
-                      // TODO: handle reset logic
-                    },
+                    onPressed: _sendResetLink,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF00695C),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
                       elevation: 6,
-                    ).copyWith(
-                      overlayColor:
-                      MaterialStateProperty.all(Colors.transparent),
-                      splashFactory: NoSplash.splashFactory,
                     ),
                     child: const Text(
                       "Send Reset Link",
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),

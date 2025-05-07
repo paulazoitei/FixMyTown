@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'login_screen.dart';
 
 
 class RegisterScreen extends StatefulWidget {
@@ -37,7 +38,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (response.statusCode == 200) {
         _showErrorDialog("Success", "Account created successfully.");
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginScreen()));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginScreen()));
       } else {
         _showErrorDialog("Error", response.body);
       }
@@ -162,7 +163,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Text(
                       "Create Account",
                       style: TextStyle(
-                        fontSize: 26,
+                        fontSize: 28,
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
@@ -188,7 +189,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       label: const Text(
                         "Register",
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
