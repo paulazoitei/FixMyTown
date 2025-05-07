@@ -76,26 +76,28 @@ public class PasswordController {
         String token = jwtService.generatePasswordResetToken(user.getEmail());
 
 
-        String link = "http://localhost:8081/api/v1/auth/reset-password?token=" + token;
+        String link = "http://192.168.56.1:8081/reset-password-page.html?token=" + token;
 
 
-        emailSender.send(
-                user.getEmail(),
-                buildResetPasswordEmail(user.getFirstName(), link),"Forgot Password"
-        );
+//        emailSender.send(
+//                user.getEmail(),
+//                buildResetPasswordEmail(user.getFirstName(), link),"Forgot Password"
+//        );
+        System.out.println("🔗 Reset password link: " + link);
+
 
         return ResponseEntity.ok("Email de resetare parolă trimis.");
     }
     private String buildResetPasswordEmail(String name, String link) {
         return """
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 600px;">
-            <h2 style="color: #333;">Hi, %s!</h2>
-            <p>We received a request to reset your password for your FixMyTown account.</p>
-            <p>Click the button below to set a new password:</p>
-            <a href="%s" style="display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 15px 0;">Reset Password</a>
-            <p>If you didn't request this, you can safely ignore this email. This link will expire in 15 minutes for your security.</p>
-            <p>Thank you,<br>The FixMyTown Team</p>
-        </div>
+                <div style="font-family: Arial, sans-serif; line-height: 1.7; padding: 22px; max-width: 600px; font-size: 16px;">
+                    <h2 style="color: #333; font-size: 24px;">Hi, %s!</h2>
+                    <p>We received a request to reset your password for your <strong>FixMyTown</strong> account.</p>
+                    <p>Click the button below to set a new password:</p>
+                    <a href="%s" style="display: inline-block; padding: 14px 28px; background-color: #007bff; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0; font-size: 16px;">Reset Password</a>
+                    <p>If you didn't request this, you can safely ignore this email. This link will expire in 15 minutes for your security.</p>
+                    <p style="margin-top: 30px;">Thank you,<br><strong>The FixMyTown Team</strong></p>
+                </div>
         """.formatted(name, link);
     }
     @PostMapping("/reset-password")

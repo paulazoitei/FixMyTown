@@ -83,7 +83,8 @@ public class WebSecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/v1/registration/**",   // pentru înregistrare
+                                "/api/v1/registration/**",
+                                "/reset-password-page.html",// pentru înregistrare
                                 "/api/v1/auth/**"            // pentru login cu JWT
                         ).permitAll()
                         .anyRequest().authenticated()
