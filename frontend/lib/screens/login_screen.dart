@@ -1,9 +1,71 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
+import 'home_screen.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  Future<void> _loginToBackend() async {
+    final url = Uri.parse("http://10.0.2.2:8081/api/v1/auth/login");
+
+    final body = {
+      "email": _emailController.text.trim(),
+      "password": _passwordController.text,
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body);
+        final token = responseBody['token'];
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('jwtToken', token);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      } else {
+        _showDialog("Login failed", response.body);
+      }
+    } catch (e) {
+      _showDialog("Connection error", "Could not reach server.");
+    }
+  }
+
+  void _showDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,14 +90,16 @@ class LoginScreen extends StatelessWidget {
                   'assets/images/logo_licenta_fundal_transparent.png',
                   height: 160,
                 ),
-                const SizedBox(height: 40), // distanță între logo și inputuri
+                const SizedBox(height: 40),
                 TextField(
+                  controller: _emailController,
                   decoration: InputDecoration(
                     hintText: 'Email',
                     hintStyle: const TextStyle(color: Colors.black54),
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -44,13 +108,15 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 TextField(
+                  controller: _passwordController,
                   obscureText: true,
                   decoration: InputDecoration(
                     hintText: 'Password',
                     hintStyle: const TextStyle(color: Colors.black54),
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -62,7 +128,7 @@ class LoginScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: _loginToBackend,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF00695C),
                       shape: RoundedRectangleBorder(
@@ -70,11 +136,10 @@ class LoginScreen extends StatelessWidget {
                       ),
                       elevation: 6,
                     ).copyWith(
-                      overlayColor: MaterialStateProperty.all(Colors.transparent),
-                      splashFactory: NoSplash.splashFactory, // ← OPREȘTE efectul complet
+                      overlayColor:
+                      MaterialStateProperty.all(Colors.transparent),
+                      splashFactory: NoSplash.splashFactory,
                     ),
-
-
                     child: const Text(
                       "LOGIN",
                       style: TextStyle(
@@ -86,8 +151,6 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 30),
-
-                // Forgot password
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -102,7 +165,8 @@ class LoginScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                          MaterialPageRoute(
+                              builder: (_) => const ForgotPasswordScreen()),
                         );
                       },
                       child: const Text(
@@ -116,8 +180,6 @@ class LoginScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-
-// Register
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -132,7 +194,8 @@ class LoginScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                          MaterialPageRoute(
+                              builder: (_) => const RegisterScreen()),
                         );
                       },
                       child: const Text(
@@ -146,7 +209,6 @@ class LoginScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 10),
               ],
             ),
