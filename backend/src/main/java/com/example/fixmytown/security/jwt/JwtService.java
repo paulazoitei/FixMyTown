@@ -89,11 +89,9 @@ public class JwtService {
         return generateToken(email, 15, "PASSWORD_RESET");
     }
 
-//    public String generateLoginToken(String email) {
-//        return generateToken(email, 60 * 10, "LOGIN");
-//    }
+
 public String generateLoginToken(String email) {
-    return generateToken(email, 1, "LOGIN");
+    return generateToken(email, 15, "LOGIN");
 }
 
 
