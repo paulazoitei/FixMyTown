@@ -60,7 +60,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           message = 'Password changed successfully';
           messageColor = Colors.green;
         } else {
-          message = 'Error: ${response.body}';
+          message = 'Token has expired. Please log in again.';
           messageColor = Colors.red;
         }
       });

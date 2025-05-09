@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'login_screen.dart';
-
+import 'package:flutter/services.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -19,6 +19,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _adminKeyController = TextEditingController();
+
+  String _selectedRole = 'USER';
+  bool _showAdminKey = false;
+
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Color(0xFF00A86B),
+      statusBarIconBrightness: Brightness.light,
+    ));
+  }
+
   Future<void> _registerToBackend() async {
     final url = Uri.parse("http://10.0.2.2:8081/api/v1/registration");
 
@@ -27,6 +41,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       "lastName": _lastNameController.text.trim(),
       "email": _emailController.text.trim(),
       "password": _passwordController.text,
+      "appUserRole": _selectedRole,
+      if (_selectedRole == 'ADMIN') "adminKey": _adminKeyController.text.trim(),
     };
 
     try {
@@ -37,8 +53,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (response.statusCode == 200) {
-        _showErrorDialog("Success", "Account created successfully.");
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginScreen()));
+        _showErrorDialog(
+          "Success",
+          "Account created successfully. Please check your email to confirm your account.",
+          onOk: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+            );
+          },
+        );
       } else {
         _showErrorDialog("Error", response.body);
       }
@@ -54,6 +78,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _adminKeyController.dispose();
     super.dispose();
   }
 
@@ -66,8 +91,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final regex = RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$");
     return regex.hasMatch(email);
   }
-
-  void _showErrorDialog(String title, String message) {
+  void _showErrorDialog(String title, String message, {VoidCallback? onOk}) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -75,13 +99,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
         content: Text(message),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              Navigator.pop(context); // închide dialogul
+              if (onOk != null) onOk(); // apelează acțiunea dacă există
+            },
             child: const Text("OK"),
           ),
         ],
       ),
     );
   }
+
 
   void _submit() {
     final firstName = _firstNameController.text.trim();
@@ -90,7 +118,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
-    // Verificăm primul câmp gol și oprim acolo cu un dialog
     if (firstName.isEmpty) {
       _showErrorDialog("Missing Field", "First Name is required.");
       return;
@@ -111,23 +138,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _showErrorDialog("Missing Field", "Confirm Password is required.");
       return;
     }
-
-    // Validare email
     if (!isEmailValid(email)) {
       _showErrorDialog("Invalid Email", "Please enter a valid email address.");
       return;
     }
-
-    // Validare parolă complexă
     if (!isPasswordValid(password)) {
-      _showErrorDialog(
-        "Weak Password",
-        "Password must be at least 8 characters and include:\n• uppercase\n• lowercase\n• number\n• special character.",
-      );
+      _showErrorDialog("Weak Password", "Password must be at least 8 characters and include:\n• uppercase\n• lowercase\n• number\n• special character.");
       return;
     }
-
-    // Verificare potrivire parolă
     if (password != confirmPassword) {
       _showErrorDialog("Password Mismatch", "Passwords do not match.");
       return;
@@ -140,74 +158,114 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true,
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/fundal_fixmytown.png'),
-            fit: BoxFit.cover,
+      resizeToAvoidBottomInset: true, // <-- asigură-te că e TRUE
+      body: SafeArea(
+        child: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/fundal_fixmytown.png'),
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.only(top: 60, bottom: 40),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Center(
-                    child: Text(
-                      "Create Account",
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.only(top: 40, bottom: 30),
+              children: [
+                const Center(
+                  child: Text(
+                    "Create Account",
+                    style: TextStyle(
+                      fontSize: 28,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+                _buildTextField(_firstNameController, "First Name"),
+                const SizedBox(height: 20),
+                _buildTextField(_lastNameController, "Last Name"),
+                const SizedBox(height: 20),
+                _buildTextField(_emailController, "Email"),
+                const SizedBox(height: 20),
+                _buildTextField(_passwordController, "Password", obscure: true),
+                const SizedBox(height: 20),
+                _buildTextField(_confirmPasswordController, "Confirm Password", obscure: true),
+                const SizedBox(height: 20),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 6,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedRole,
+                      icon: const Icon(Icons.arrow_drop_down, color: Colors.black87),
+                      dropdownColor: Colors.white,
+                      isExpanded: true,
+                      borderRadius: BorderRadius.circular(12),
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                      items: ['USER', 'ADMIN'].map((role) {
+                        return DropdownMenuItem<String>(
+                          value: role,
+                          child: Text(role),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedRole = value!;
+                          _showAdminKey = _selectedRole == 'ADMIN';
+                        });
+                      },
+                    ),
+                  ),
+                ),
+                if (_showAdminKey) ...[
+                  const SizedBox(height: 20),
+                  _buildTextField(_adminKeyController, "Admin Key"),
+                ],
+                const SizedBox(height: 30),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton.icon(
+                    onPressed: _submit,
+                    icon: const Icon(Icons.person_add, color: Colors.white),
+                    label: const Text(
+                      "Register",
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 18,
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 40),
-                  _buildTextField(_firstNameController, "First Name"),
-                  const SizedBox(height: 20),
-                  _buildTextField(_lastNameController, "Last Name"),
-                  const SizedBox(height: 20),
-                  _buildTextField(_emailController, "Email"),
-                  const SizedBox(height: 20),
-                  _buildTextField(_passwordController, "Password", obscure: true),
-                  const SizedBox(height: 20),
-                  _buildTextField(_confirmPasswordController, "Confirm Password", obscure: true),
-                  const SizedBox(height: 30),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton.icon(
-                      onPressed: _submit,
-                      icon: const Icon(Icons.person_add, color: Colors.white),
-                      label: const Text(
-                        "Register",
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF00695C),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00695C),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        elevation: 6,
-                      ).copyWith(
-                        overlayColor: MaterialStateProperty.all(Colors.transparent),
-                        splashFactory: NoSplash.splashFactory,
-                      ),
+                      elevation: 6,
+                    ).copyWith(
+                      overlayColor: MaterialStateProperty.all(Colors.transparent),
+                      splashFactory: NoSplash.splashFactory,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -215,8 +273,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint,
-      {bool obscure = false}) {
+  Widget _buildTextField(TextEditingController controller, String hint, {bool obscure = false}) {
     return TextFormField(
       controller: controller,
       obscureText: obscure,

@@ -13,7 +13,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
 
   Future<void> _sendResetLink() async {
-    final url = Uri.parse("http://10.0.2.2:8081/api/v1/auth/forgot-password");
+    final url = Uri.parse("http://192.168.1.10:8081/api/v1/auth/forgot-password");
 
     try {
       final response = await http.post(
