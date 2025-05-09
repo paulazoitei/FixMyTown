@@ -79,11 +79,11 @@ public class PasswordController {
         String link = "http://192.168.56.1:8081/reset-password-page.html?token=" + token;
 
 
-//        emailSender.send(
-//                user.getEmail(),
-//                buildResetPasswordEmail(user.getFirstName(), link),"Forgot Password"
-//        );
-        System.out.println("🔗 Reset password link: " + link);
+        emailSender.send(
+                user.getEmail(),
+                buildResetPasswordEmail(user.getFirstName(), link),"Forgot Password"
+        );
+//        System.out.println("🔗 Reset password link: " + link);
 
 
         return ResponseEntity.ok("Email de resetare parolă trimis.");

@@ -1,5 +1,6 @@
 package com.example.fixmytown.registration;
 
+import com.example.fixmytown.appuser.AppUserRole;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -16,4 +17,7 @@ public class RegistrationRequest {
     private String lastName;
     private String email;
     private String password;
+    private AppUserRole appUserRole;
+    private String adminKey;
+
 }

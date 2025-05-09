@@ -29,10 +29,15 @@ public class RegistrationService {
     private final AppUserRepository appUserRepository;
     private final AppUserRepository userRepository;
     private final ConfirmationEmailService confirmationEmailService;
+    private final  String adminSecret="FixMyTownAdminSecret";
 
 
     public String register(RegistrationRequest request) {
         boolean isValidEmail = emailValidator.test(request.getEmail());
+        if (request.getAppUserRole() == AppUserRole.ADMIN &&
+                !adminSecret.equals(request.getAdminKey())) {
+            throw new IllegalStateException("Invalid admin key. Not authorized to create ADMIN account.");
+        }
         if (!isValidEmail) {
             throw new IllegalStateException("email not valid");
         }
@@ -42,7 +47,7 @@ public class RegistrationService {
                 request.getLastName(),
                 request.getEmail(),
                 request.getPassword(),
-                AppUserRole.USER
+                request.getAppUserRole() != null ? request.getAppUserRole() : AppUserRole.USER
         );
 
         String token = appUserService.signUpUser(user);
