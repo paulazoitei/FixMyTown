@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -11,24 +13,61 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
+  bool _isLoading = false;
+  final Duration cooldownDuration = const Duration(minutes: 3);
 
   Future<void> _sendResetLink() async {
-    final url = Uri.parse("http://192.168.1.10:8081/api/v1/auth/forgot-password");
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      _showDialog("Missing Field", "Email is required.");
+      return;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final lastSentMillis = prefs.getInt("last_reset_time_$email");
+    final now = DateTime.now();
+
+    if (lastSentMillis != null) {
+      final lastSentTime = DateTime.fromMillisecondsSinceEpoch(lastSentMillis);
+      final difference = now.difference(lastSentTime);
+
+      if (difference < cooldownDuration) {
+        final remaining = cooldownDuration - difference;
+        final minutes = remaining.inMinutes;
+        final seconds = remaining.inSeconds % 60;
+
+        _showDialog("Wait", "You already requested a reset email. Please try again in $minutes minute(s) and $seconds second(s).");
+        return;
+      }
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
+      final url = Uri.parse("http://10.0.2.2:8081/api/v1/auth/forgot-password");
+
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": _emailController.text.trim()}),
-      );
+        body: jsonEncode({"email": email}),
+      ).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
-        _showDialog("Success", "The password reset link has been sent to your email..");
+        await prefs.setInt("last_reset_time_$email", now.millisecondsSinceEpoch);
+        _showDialog("Success", "The password reset link has been sent to your email.");
       } else {
-        _showDialog("Eroare", response.body);
+        _showDialog("Error", response.body);
       }
+    } on TimeoutException {
+      _showDialog("Timeout", "Server did not respond. Please try again.");
     } catch (e) {
-      _showDialog("Eroare de conexiune", "Nu s-a putut trimite cererea.");
+      _showDialog("Connection Error", "Could not send the request.");
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -39,7 +78,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         title: Text(title),
         content: Text(message),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("OK")),
         ],
       ),
     );
@@ -96,7 +137,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: _sendResetLink,
+                    onPressed: _isLoading ? null : _sendResetLink,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF00695C),
                       shape: RoundedRectangleBorder(
@@ -104,7 +145,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       elevation: 6,
                     ),
-                    child: const Text(
+                    child: _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
                       "Send Reset Link",
                       style: TextStyle(
                         fontSize: 18,
