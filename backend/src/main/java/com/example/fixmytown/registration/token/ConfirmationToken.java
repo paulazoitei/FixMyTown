@@ -27,7 +27,7 @@ public class ConfirmationToken {
 
     private Long id;
 
-    @Column(nullable=false)
+    @Column(nullable=false, columnDefinition = "VARCHAR(1000)")
     private String token;
 
     @Column(nullable=false)

@@ -27,7 +27,9 @@ public class AuthenticationController {
         );
 
         UserDetails user = appUserService.loadUserByUsername(request.getEmail());
-        String jwtToken = jwtService.generateLoginToken(user.getUsername());
+        String role = user.getAuthorities().iterator().next().getAuthority();
+        String jwtToken = jwtService.generateLoginToken(user.getUsername(), role);
+
 
         return new AuthenticationResponse(jwtToken);
     }

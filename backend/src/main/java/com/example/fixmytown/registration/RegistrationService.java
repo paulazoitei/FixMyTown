@@ -1,5 +1,3 @@
-
-
 package com.example.fixmytown.registration;
 
 import com.example.fixmytown.appuser.AppUser;
@@ -12,7 +10,6 @@ import com.example.fixmytown.registration.token.ConfirmationTokenService;
 import com.example.fixmytown.security.jwt.JwtService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,8 +26,7 @@ public class RegistrationService {
     private final AppUserRepository appUserRepository;
     private final AppUserRepository userRepository;
     private final ConfirmationEmailService confirmationEmailService;
-    private final  String adminSecret="FixMyTownAdminSecret";
-
+    private final String adminSecret = "FixMyTownAdminSecret";
 
     public String register(RegistrationRequest request) {
         boolean isValidEmail = emailValidator.test(request.getEmail());
@@ -41,18 +37,26 @@ public class RegistrationService {
         if (!isValidEmail) {
             throw new IllegalStateException("email not valid");
         }
+        if (request.getAppUserRole() == AppUserRole.ADMIN && request.getZone() != null) {
+            appUserRepository.findByZone(request.getZone()).ifPresent(existing -> {
+                throw new IllegalStateException("There is already an admin assigned to this zone.");
+            });
+        }
 
         AppUser user = new AppUser(
                 request.getFirstName(),
                 request.getLastName(),
                 request.getEmail(),
                 request.getPassword(),
-                request.getAppUserRole() != null ? request.getAppUserRole() : AppUserRole.USER
+                request.getAppUserRole() != null ? request.getAppUserRole() : AppUserRole.USER,
+                request.getZone() // will be null for USER
         );
+        if (request.getZone() != null && request.getAppUserRole() == AppUserRole.ADMIN) {
+            user.setZone(request.getZone());
+        }
 
         String token = appUserService.signUpUser(user);
 
-        // Fetch user from DB to avoid transient error
         AppUser savedUser = appUserRepository.findByEmail(user.getEmail())
                 .orElseThrow(() -> new IllegalStateException("User not found after registration"));
 
@@ -140,7 +144,4 @@ public class RegistrationService {
                 "</body>" +
                 "</html>";
     }
-
 }
-
-
