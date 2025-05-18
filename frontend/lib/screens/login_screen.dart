@@ -46,9 +46,11 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
         final token = responseBody['token'];
+        final userId = responseBody['userId'];
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('jwtToken', token);
+        await prefs.setInt('userId', userId);
 
         Navigator.pushReplacement(
           context,

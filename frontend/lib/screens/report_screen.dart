@@ -5,6 +5,8 @@ import 'package:latlong2/latlong.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -101,18 +103,66 @@ class _ReportScreenState extends State<ReportScreen> {
     }
   }
 
-  void _submitReport() {
-    if (_formKey.currentState!.validate() && _selectedLocation != null) {
-      print('Location: $_selectedLocation');
-      print('Title: ${_titleController.text}');
-      print('Description: ${_descController.text}');
-      print('Image: ${_selectedImage?.path}');
+  Future<void> _submitReport() async {
+    if (_formKey.currentState!.validate() &&
+        _selectedLocation != null &&
+        _selectedImage != null) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final userId = prefs.getInt('userId');
+        final token = prefs.getString('jwtToken');
+
+        if (userId == null || token == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Utilizator neautentificat.")),
+          );
+          return;
+        }
+
+        final uri = Uri.parse("http://10.0.2.2:8081/api/v1/reports/submit");
+
+        var request = http.MultipartRequest('POST', uri)
+          ..headers['Authorization'] = 'Bearer $token'
+          ..fields['title'] = _titleController.text
+          ..fields['description'] = _descController.text
+          ..fields['latitude'] = _selectedLocation!.latitude.toString()
+          ..fields['longitude'] = _selectedLocation!.longitude.toString()
+          ..fields['userId'] = userId.toString()
+          ..files.add(await http.MultipartFile.fromPath(
+              'image', _selectedImage!.path));
+
+        final response = await request.send();
+        final responseBody = await response.stream.bytesToString();
+
+        print('Status: ${response.statusCode}');
+        print('Body: $responseBody');
+
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Raport trimis!")),
+          );
+        } else if (response.statusCode == 403) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Acces interzis (403). Verifică tokenul.")),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Eroare la trimitere: $responseBody")),
+          );
+        }
+      } catch (e) {
+        print("Exceptie la trimitere: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Eroare internă la trimitere.")),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a location and complete the form')),
+        const SnackBar(content: Text("Completează toate câmpurile.")),
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
