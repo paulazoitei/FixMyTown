@@ -14,13 +14,19 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/reports")
+@RequestMapping("/api/v1/reports")
 public class ReportController {
 
     @Autowired
     private ReportRepository reportRepo;
     @Autowired private AppUserRepository userRepo;
     @Autowired private FileStorageService fileService;
+    private final ZoneDetectionService zoneDetectionService;
+
+    public ReportController(ZoneDetectionService zoneDetectionService, FileStorageService fileService) {
+        this.zoneDetectionService = zoneDetectionService;
+        this.fileService = fileService;
+    }
 
     @PostMapping(value = "/submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> submitReport(
@@ -32,7 +38,7 @@ public class ReportController {
             @RequestParam MultipartFile image
     ) {
         AppUser user = userRepo.findById(userId).orElseThrow();
-        String zone = "Iași"; // sau getZoneFromCoordinates(latitude, longitude)
+        String zone = zoneDetectionService.getZoneFromCoordinates(latitude, longitude);
 
         String imageUrl = fileService.save(image);
 
@@ -62,6 +68,12 @@ public class ReportController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not an admin");
         return reportRepo.findByZone(admin.getZone());
     }
+    @GetMapping("/{reportId}")
+    public Report getReportById(@PathVariable Long reportId) {
+        return reportRepo.findById(reportId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Report not found"));
+    }
+
 
 }
 

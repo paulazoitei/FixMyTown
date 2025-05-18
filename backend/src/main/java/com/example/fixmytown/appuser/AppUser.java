@@ -60,6 +60,9 @@ public class AppUser implements UserDetails {
     public String getLastName() {
         return lastName;
     }
+    public Long getId() {
+        return id;
+    }
 
     @Override public boolean isAccountNonExpired() { return true; }
     @Override public boolean isAccountNonLocked() { return !locked; }

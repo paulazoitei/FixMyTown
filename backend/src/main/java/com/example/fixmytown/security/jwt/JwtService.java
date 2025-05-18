@@ -174,7 +174,7 @@ public class JwtService {
     }
 
     public String generateLoginToken(String email, String role) {
-        return generateTokenWithRole(email, 15, "LOGIN", role);
+        return generateTokenWithRole(email, 30240, "LOGIN", role);
     }
 
     public String extractEmail(String token) {

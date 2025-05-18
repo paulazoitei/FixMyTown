@@ -1,9 +1,12 @@
 package com.example.fixmytown.report;
 
 public class LatLng {
-    private final double lat;
-    private final double lng;
 
+
+    private  double lat;
+    private  double lng;
+
+    public LatLng() {};
     public LatLng(double lat, double lng) {
         this.lat = lat;
         this.lng = lng;

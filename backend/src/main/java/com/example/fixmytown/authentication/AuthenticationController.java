@@ -1,5 +1,6 @@
 package com.example.fixmytown.authentication;
 
+import com.example.fixmytown.appuser.AppUser;
 import com.example.fixmytown.appuser.AppUserService;
 import com.example.fixmytown.security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -26,11 +27,13 @@ public class AuthenticationController {
                 )
         );
 
-        UserDetails user = appUserService.loadUserByUsername(request.getEmail());
+        UserDetails userDetails = appUserService.loadUserByUsername(request.getEmail());
+        AppUser user = (AppUser) userDetails; // cast
+
         String role = user.getAuthorities().iterator().next().getAuthority();
         String jwtToken = jwtService.generateLoginToken(user.getUsername(), role);
 
+        return new AuthenticationResponse(jwtToken, user.getId());
 
-        return new AuthenticationResponse(jwtToken);
     }
 }
