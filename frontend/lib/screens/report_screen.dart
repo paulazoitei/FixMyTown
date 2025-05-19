@@ -225,7 +225,10 @@ class _ReportScreenState extends State<ReportScreen> {
               maxChildSize: 0.95,
               builder: (context, scrollController) => Container(
                 decoration: const BoxDecoration(
-                  color: Colors.white,
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/report_issue_background.png'),
+                    fit: BoxFit.cover,
+                  ),
                   borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
                 ),
                 padding: const EdgeInsets.all(20),
@@ -239,7 +242,7 @@ class _ReportScreenState extends State<ReportScreen> {
                           const Icon(Icons.report_problem, color: Colors.redAccent),
                           const SizedBox(width: 8),
                           Text("Report Issue",
-                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green[800])),
+                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -249,12 +252,21 @@ class _ReportScreenState extends State<ReportScreen> {
                           children: [
                             TextFormField(
                               controller: _titleController,
-                              onTap: () => _sheetController.animateTo(0.65, duration: const Duration(milliseconds: 300), curve: Curves.easeOut),
+                              style: const TextStyle(color: Colors.white),
+                              onTap: () => _sheetController.animateTo(0.65,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeOut),
                               decoration: InputDecoration(
                                 labelText: "Title",
-                                prefixIcon: const Icon(Icons.title_outlined),
+                                labelStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                ),
+
+                                prefixIcon: const Icon(Icons.title_outlined, color: Colors.white),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                fillColor: Colors.purple[50], // <== Adaugă asta
+                                fillColor: Colors.black.withOpacity(0.7),
                                 filled: true,
                               ),
                               validator: (val) => val == null || val.isEmpty ? "Required" : null,
@@ -262,17 +274,27 @@ class _ReportScreenState extends State<ReportScreen> {
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _descController,
-                              onTap: () => _sheetController.animateTo(0.75, duration: const Duration(milliseconds: 300), curve: Curves.easeOut),
+                              style: const TextStyle(color: Colors.white),
+                              onTap: () => _sheetController.animateTo(0.75,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeOut),
                               maxLines: 3,
                               decoration: InputDecoration(
                                 labelText: "Description",
-                                prefixIcon: const Icon(Icons.description_outlined),
+                                labelStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                ),
+
+                                prefixIcon: const Icon(Icons.description_outlined, color: Colors.white),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                fillColor: Colors.purple[50], // <== Adaugă asta
+                                fillColor: Colors.black.withOpacity(0.7),
                                 filled: true,
                               ),
                               validator: (val) => val == null || val.isEmpty ? "Required" : null,
                             ),
+
                             const SizedBox(height: 16),
                             Row(
                               children: [
@@ -304,9 +326,9 @@ class _ReportScreenState extends State<ReportScreen> {
                                 const Icon(Icons.location_on, size: 20, color: Colors.blue),
                                 const SizedBox(width: 6),
                                 Expanded(
-                                  child: Text(
+                                  child:Text(
                                     "Location: ${_selectedLocation!.latitude.toStringAsFixed(5)}, ${_selectedLocation!.longitude.toStringAsFixed(5)}",
-                                    style: const TextStyle(fontSize: 14),
+                                    style: const TextStyle(fontSize: 14, color: Colors.white),
                                   ),
                                 ),
                               ],
@@ -320,6 +342,8 @@ class _ReportScreenState extends State<ReportScreen> {
                                   padding: const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                                   backgroundColor: Colors.green[700],
+                                  elevation: 6,
+                                  shadowColor: Colors.black87,
                                 ),
                                 icon: const Icon(Icons.send, color: Colors.white),
                                 label: const Text("Send Report", style: TextStyle(fontSize: 16, color: Colors.white)),

@@ -86,9 +86,9 @@ class HomeScreen extends StatelessWidget {
                           onTap: () => Navigator.pushNamed(context, '/report'),
                         ),
                         _buildFeatureCard(
-                          icon: Icons.map,
-                          title: 'Map',
-                          onTap: () => Navigator.pushNamed(context, '/map'),
+                          icon: Icons.article,
+                          title: 'My Reports',
+                          onTap: () => Navigator.pushNamed(context, '/myReports'),
                         ),
                         _buildFeatureCard(
                           icon: Icons.notifications_active,
