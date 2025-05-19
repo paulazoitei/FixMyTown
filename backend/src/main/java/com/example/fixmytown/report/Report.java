@@ -4,6 +4,8 @@ import com.example.fixmytown.appuser.AppUser;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 
 @Entity
 @Data
@@ -18,6 +20,7 @@ public class Report {
     private double longitude;
     private String imageUrl;
     private String zone;
+    private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

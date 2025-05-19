@@ -84,8 +84,9 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/v1/registration/**",
-                                "/reset-password-page.html",// pentru înregistrare
-                                "/api/v1/auth/**"            // pentru login cu JWT
+                                "/reset-password-page.html",
+                                "/api/v1/auth/**",
+                                "/uploads/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

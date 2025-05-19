@@ -7,10 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -50,29 +52,32 @@ public class ReportController {
         report.setUser(user);
         report.setZone(zone);
         report.setImageUrl(imageUrl);
+        report.setCreatedAt(LocalDateTime.now());
 
         reportRepo.save(report);
         return ResponseEntity.ok("Report saved");
     }
 
-    @GetMapping("/user/{userId}")
-    public List<Report> getUserReports(@PathVariable Long userId) {
-        AppUser user = userRepo.findById(userId).orElseThrow();
+
+    @GetMapping("/user/me")
+    public List<Report> getReportsForCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        AppUser user = userRepo.findByEmail(email).orElseThrow();
         return reportRepo.findByUser(user);
     }
 
-    @GetMapping("/admin/{adminId}")
-    public List<Report> getAdminReports(@PathVariable Long adminId) {
-        AppUser admin = userRepo.findById(adminId).orElseThrow();
-        if (admin.getAppUserRole() != AppUserRole.ADMIN)
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not an admin");
+    @GetMapping("/admin/me")
+    public List<Report> getReportsForAdminZone() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        AppUser admin = userRepo.findByEmail(email).orElseThrow();
+
+        if (admin.getAppUserRole() != AppUserRole.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can access this endpoint.");
+        }
+
         return reportRepo.findByZone(admin.getZone());
     }
-    @GetMapping("/{reportId}")
-    public Report getReportById(@PathVariable Long reportId) {
-        return reportRepo.findById(reportId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Report not found"));
-    }
+
 
 
 }
