@@ -8,6 +8,7 @@ environment:
   sdk: ^3.7.2
 
 dependencies:
+  jwt_decoder: ^2.0.1
   google_fonts: ^6.1.0
   animate_do: ^2.1.0
   http: ^1.1.0

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
+import 'package:licenta_frontend/screens/my_reports_admin_screen.dart';
+import 'screens/home_user_screen.dart';
+import 'screens/home_admin_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/change_password_screen.dart';
 import 'screens/report_screen.dart';
-import 'screens/my_reports_screen.dart';
-
+import 'screens/my_reports_user_screen.dart';
+import 'screens/reports_map_screen.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -26,10 +28,14 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const SplashScreen(),
         '/login': (context) => const LoginScreen(),
-        '/home': (context) => const HomeScreen(),
+        '/home-user': (context) => const HomeUserScreen(),
+        '/home-admin': (context) => const HomeAdminScreen(),
         '/change-password': (context) => const ChangePasswordScreen(),
         '/report': (_) => const ReportScreen(),
-        '/myReports':(context)=> const MyReportsScreen(),
+        '/myReportsUser':(context)=> const MyReportsUserScreen(),
+        '/myReportsAdmin':(context)=> const MyReportsAdminScreen(),
+        '/reports-map': (context) => const ReportsMapScreen(),
+
       },
     );
   }

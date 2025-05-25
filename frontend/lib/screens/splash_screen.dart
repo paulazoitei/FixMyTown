@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'home_screen.dart';
-import 'login_screen.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -21,11 +20,17 @@ class _SplashScreenState extends State<SplashScreen> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwtToken');
 
-
     await Future.delayed(const Duration(seconds: 2));
 
     if (token != null && token.isNotEmpty) {
-      Navigator.pushReplacementNamed(context, '/home');
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+      String role = decodedToken['role'];
+
+      if (role == 'ADMIN') {
+        Navigator.pushReplacementNamed(context, '/home-admin');
+      } else {
+        Navigator.pushReplacementNamed(context, '/home-user');
+      }
     } else {
       Navigator.pushReplacementNamed(context, '/login');
     }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class HomeUserScreen extends StatelessWidget {
+  const HomeUserScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -88,12 +88,12 @@ class HomeScreen extends StatelessWidget {
                         _buildFeatureCard(
                           icon: Icons.article,
                           title: 'My Reports',
-                          onTap: () => Navigator.pushNamed(context, '/myReports'),
+                          onTap: () => Navigator.pushNamed(context, '/myReportsUser'),
                         ),
                         _buildFeatureCard(
-                          icon: Icons.notifications_active,
-                          title: 'Alerts',
-                          onTap: () => Navigator.pushNamed(context, '/notifications'),
+                          icon: Icons.map,
+                          title: 'Reports Map',
+                          onTap: () => Navigator.pushNamed(context, '/reports-map'),
                         ),
                         _buildFeatureCard(
                           icon: Icons.thumb_up,
