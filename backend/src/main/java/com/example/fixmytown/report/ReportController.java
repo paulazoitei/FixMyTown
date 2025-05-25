@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/reports")
@@ -77,6 +78,25 @@ public class ReportController {
 
         return reportRepo.findByZone(admin.getZone());
     }
+    @PutMapping("/admin/{id}/status")
+    public ResponseEntity<?> updateStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+
+        String newStatus = body.get("status");
+        Report report = reportRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Report not found"));
+
+        report.setStatus(newStatus);
+        reportRepo.save(report);
+
+        return ResponseEntity.ok().build();
+    }
+    @GetMapping("/all")
+    public List<Report> getAllReports() {
+        return reportRepo.findAll();
+    }
+
 
 
 

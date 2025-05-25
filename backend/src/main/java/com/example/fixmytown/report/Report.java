@@ -20,9 +20,11 @@ public class Report {
     private double longitude;
     private String imageUrl;
     private String zone;
+    private String status= "RECEIVED";
     private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private AppUser user;
+
 }
