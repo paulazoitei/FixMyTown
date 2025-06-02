@@ -67,7 +67,7 @@ class _ReportsMapScreenState extends State<ReportsMapScreen> {
           title: const Text(
             'Reports Map',
             style: TextStyle(
-              fontSize: 22,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               letterSpacing: 1,
               color: Colors.white,

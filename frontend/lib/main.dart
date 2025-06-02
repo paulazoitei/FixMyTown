@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:licenta_frontend/screens/my_reports_admin_screen.dart';
+import 'package:licenta_frontend/screens/notifications_screen.dart';
 import 'package:licenta_frontend/services/notification_service.dart';
 import 'screens/home_user_screen.dart';
 import 'screens/home_admin_screen.dart';
@@ -11,6 +12,7 @@ import 'screens/my_reports_user_screen.dart';
 import 'screens/reports_map_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:licenta_frontend/screens/notifications_screen.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
@@ -46,6 +48,7 @@ class MyApp extends StatelessWidget {
         '/myReportsUser': (context) => const MyReportsUserScreen(),
         '/myReportsAdmin': (context) => const MyReportsAdminScreen(),
         '/reports-map': (context) => const ReportsMapScreen(),
+        '/notifications':(context)=> const NotificationsScreen()
       },
     );
   }
