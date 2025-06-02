@@ -14,7 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-
+import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +106,7 @@ public class ReportController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Report not found"));
 
         report.setStatus(newStatus);
-        if ("FIXED".equalsIgnoreCase(newStatus)) {
+        if ("Fixed".equalsIgnoreCase(newStatus)) {
             report.setExpiresAt(LocalDateTime.now().plusDays(1));
         } else {
             report.setExpiresAt(null);
@@ -114,13 +114,23 @@ public class ReportController {
 
         reportRepo.save(report);
 
-        // ✅ Aici obții tokenul
+
         String userToken = report.getUser().getFcmToken();
 
-        // ✅ Trimite notificarea
+
+        String title = report.getTitle();
+        String zone = report.getZone();
+        LocalDateTime created = report.getCreatedAt();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+        String createdFormatted = created.format(formatter);
+
+        String message = "The report titled '" + title + "' from the zone '" + zone +
+                "' created at '" + createdFormatted +
+                "' has changed status to: " + newStatus;
+
         if (userToken != null && !userToken.isBlank()) {
-            fcmService.sendNotification(userToken, "Report Updated", "Status changed to: " + newStatus);
-            notificationService.saveNotification(report.getUser(), "Report Status Updated", "Status is now: " + newStatus);
+            fcmService.sendNotification(userToken, "Report Status Updated", message);
+            notificationService.saveNotification(report.getUser(), "Report Status Updated", message);
         } else {
             System.out.println("❌ No FCM token available for user " + report.getUser().getEmail());
         }

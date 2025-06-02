@@ -23,6 +23,7 @@ public class NotificationController {
     public List<NotificationEntity> getUserNotifications() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         AppUser user = userRepo.findByEmail(email).orElseThrow();
-        return notificationRepo.findByUser(user);
+        return notificationRepo.findByUserOrderByTimestampDesc(user);
     }
+
 }
