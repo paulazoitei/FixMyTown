@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:licenta_frontend/screens/report_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/notification_service.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
 import 'home_user_screen.dart';
 import 'choose_role_screen.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'home_admin_screen.dart';
+import 'package:licenta_frontend/main.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -47,11 +49,16 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
         final token = responseBody['token'];
+        print("🔐 JWT Token primit: $token");
         final userId = responseBody['userId'];
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('jwtToken', token);
         await prefs.setInt('userId', userId);
+
+
+
+
 
         Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
         String role = decodedToken['role'];

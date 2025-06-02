@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "32847137729",
+    "project_id": "fixmytown-52834",
+    "storage_bucket": "fixmytown-52834.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:32847137729:android:3e9a47286f31276965fd40",
+        "android_client_info": {
+          "package_name": "com.example.licenta_frontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBx0Khmv2LLcAwcvGBXeoDJ2V16vWXfYAU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
