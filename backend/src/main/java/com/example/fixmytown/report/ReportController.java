@@ -3,6 +3,9 @@ package com.example.fixmytown.report;
 import com.example.fixmytown.appuser.AppUser;
 import com.example.fixmytown.appuser.AppUserRepository;
 import com.example.fixmytown.appuser.AppUserRole;
+import com.example.fixmytown.firebase.FCMService;
+import com.example.fixmytown.notification.NotificationService;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,11 +27,26 @@ public class ReportController {
     private ReportRepository reportRepo;
     @Autowired private AppUserRepository userRepo;
     @Autowired private FileStorageService fileService;
-    private final ZoneDetectionService zoneDetectionService;
+    private  ZoneDetectionService zoneDetectionService;
 
-    public ReportController(ZoneDetectionService zoneDetectionService, FileStorageService fileService) {
-        this.zoneDetectionService = zoneDetectionService;
+    private  FCMService fcmService;
+    private  NotificationService notificationService;
+
+    @Autowired
+    public ReportController(
+            ReportRepository reportRepo,
+            AppUserRepository userRepo,
+            FileStorageService fileService,
+            ZoneDetectionService zoneDetectionService,
+            FCMService fcmService,
+            NotificationService notificationService
+    ) {
+        this.reportRepo = reportRepo;
+        this.userRepo = userRepo;
         this.fileService = fileService;
+        this.zoneDetectionService = zoneDetectionService;
+        this.fcmService = fcmService;
+        this.notificationService = notificationService;
     }
 
     @PostMapping(value = "/submit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -81,17 +99,34 @@ public class ReportController {
     @PutMapping("/admin/{id}/status")
     public ResponseEntity<?> updateStatus(
             @PathVariable Long id,
-            @RequestBody Map<String, String> body) {
+            @RequestBody Map<String, String> body) throws FirebaseMessagingException {
 
         String newStatus = body.get("status");
         Report report = reportRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Report not found"));
 
         report.setStatus(newStatus);
+        if ("FIXED".equalsIgnoreCase(newStatus)) {
+            report.setExpiresAt(LocalDateTime.now().plusDays(1));
+        } else {
+            report.setExpiresAt(null);
+        }
+
         reportRepo.save(report);
 
+        // ✅ Aici obții tokenul
+        String userToken = report.getUser().getFcmToken();
+
+        // ✅ Trimite notificarea
+        if (userToken != null && !userToken.isBlank()) {
+            fcmService.sendNotification(userToken, "Report Updated", "Status changed to: " + newStatus);
+            notificationService.saveNotification(report.getUser(), "Report Status Updated", "Status is now: " + newStatus);
+        } else {
+            System.out.println("❌ No FCM token available for user " + report.getUser().getEmail());
+        }
         return ResponseEntity.ok().build();
     }
+
     @GetMapping("/all")
     public List<Report> getAllReports() {
         return reportRepo.findAll();

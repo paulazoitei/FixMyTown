@@ -86,7 +86,8 @@ public class WebSecurityConfig {
                                 "/api/v1/registration/**",
                                 "/reset-password-page.html",
                                 "/api/v1/auth/**",
-                                "/uploads/**"
+                                "/uploads/**",
+                                "/api/v1/users/fcm-token"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

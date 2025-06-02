@@ -33,6 +33,9 @@ public class AppUser implements UserDetails {
     private Boolean locked=false;
     private Boolean enabled=false;
 
+    @Column
+    private String fcmToken;
+
     public AppUser(String firstName, String lastName, String email, String password, AppUserRole appUserRole,String zone) {
         this.firstName = firstName;
         this.lastName = lastName;

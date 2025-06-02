@@ -22,6 +22,7 @@ public class Report {
     private String zone;
     private String status= "RECEIVED";
     private LocalDateTime createdAt;
+    private LocalDateTime expiresAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
