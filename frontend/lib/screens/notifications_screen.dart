@@ -13,6 +13,7 @@ class NotificationsScreen extends StatefulWidget {
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
   List<dynamic> notifications = [];
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -21,6 +22,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Future<void> fetchNotifications() async {
+    setState(() {
+      isLoading = true;
+    });
+
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwtToken');
 
@@ -32,16 +37,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       },
     );
 
-    if (response.statusCode == 200) {
-      setState(() {
+    setState(() {
+      if (response.statusCode == 200) {
         notifications = jsonDecode(response.body);
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to load notifications.")),
-      );
-    }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to load notifications.")),
+        );
+      }
+      isLoading = false;
+    });
   }
+
 
   String formatTimestamp(String? timestamp) {
     if (timestamp == null) return "Unknown";
@@ -87,8 +94,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: notifications.isEmpty
-            ? const Center(child: CircularProgressIndicator())
+        child: isLoading
+            ? const Center(
+          child: CircularProgressIndicator(
+            color: Color(0xff00b09b),
+          ),
+        )
+            : notifications.isEmpty
+            ? const Center(
+          child: Text(
+            "You haven't received any notification yet.",
+            style: TextStyle(fontSize: 19, fontStyle: FontStyle.italic),
+          ),
+        )
             : Padding(
           padding: const EdgeInsets.only(top: 100),
           child: ListView.builder(

@@ -17,6 +17,7 @@ class MyReportsAdminScreen extends StatefulWidget {
 class _MyReportsAdminScreenState extends State<MyReportsAdminScreen> {
   List<dynamic> reports = [];
   List<bool> expandedStates = [];
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -41,8 +42,12 @@ class _MyReportsAdminScreenState extends State<MyReportsAdminScreen> {
       setState(() {
         reports = jsonDecode(response.body);
         expandedStates = List.filled(reports.length, false);
+        isLoading = false;
       });
     } else {
+      setState(() {
+        isLoading = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error loading reports.")),
       );
@@ -96,8 +101,14 @@ class _MyReportsAdminScreenState extends State<MyReportsAdminScreen> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: reports.isEmpty
-            ? const Center(child: CircularProgressIndicator())
+        child:  isLoading ? const Center(child: CircularProgressIndicator())
+            : reports.isEmpty
+            ? const Center(
+          child: Text(
+            "You have not submitted any reports yet.",
+            style: TextStyle(fontSize: 19, fontStyle: FontStyle.italic),
+          ),
+        )
             : Padding(
           padding: const EdgeInsets.only(top: 100),
           child: ListView.builder(
