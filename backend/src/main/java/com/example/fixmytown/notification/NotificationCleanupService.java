@@ -14,7 +14,7 @@ public class NotificationCleanupService {
         this.notificationRepo = notificationRepo;
     }
 
-    @Scheduled(cron = "0 0 2 * * ?") // la 02:00 AM în fiecare zi
+    @Scheduled(cron = "0 0 2 * * ?")
     public void deleteOldNotifications() {
         LocalDateTime cutoff = LocalDateTime.now().minusDays(30);
         notificationRepo.deleteByTimestampBefore(cutoff);

@@ -22,5 +22,7 @@ public class Comment {
     private AppUser user;
 
     @ManyToOne
+    @JoinColumn(name = "report_id")
     private Report report;
+
 }

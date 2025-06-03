@@ -5,6 +5,7 @@ import com.example.fixmytown.appuser.AppUserRepository;
 import com.example.fixmytown.report.Report;
 import com.example.fixmytown.report.ReportRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -42,4 +43,23 @@ public class CommentController {
     public List<Comment> getComments(@PathVariable Long reportId) {
         return commentRepo.findByReportId(reportId);
     }
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<?> deleteComment(@PathVariable Long commentId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        AppUser currentUser = userRepo.findByEmail(email).orElseThrow();
+
+        Comment comment = commentRepo.findById(commentId).orElseThrow();
+        Report report = comment.getReport();
+
+        boolean isCommentOwner = comment.getUser().getId().equals(currentUser.getId());
+        boolean isReportOwner = report.getUser().getId().equals(currentUser.getId());
+
+        if (isCommentOwner || isReportOwner) {
+            commentRepo.delete(comment);
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Not allowed to delete this comment.");
+        }
+    }
+
 }

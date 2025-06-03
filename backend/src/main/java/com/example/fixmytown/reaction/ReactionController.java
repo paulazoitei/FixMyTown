@@ -45,4 +45,14 @@ public class ReactionController {
     public List<Reaction> getReactions(@PathVariable Long reportId) {
         return reactionRepo.findByReportId(reportId);
     }
+    @DeleteMapping("/{reportId}")
+    public ResponseEntity<?> deleteReaction(@PathVariable Long reportId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        AppUser user = userRepo.findByEmail(email).orElseThrow();
+
+        reactionRepo.findByReportIdAndUserId(reportId, user.getId()).ifPresent(reactionRepo::delete);
+
+        return ResponseEntity.ok().build();
+    }
+
 }

@@ -15,11 +15,12 @@ public class ReportCleanupService {
         this.reportRepo = reportRepo;
     }
 
-    // Rulează o dată pe zi (ex: la ora 3 noaptea)
-    @Scheduled(cron = "0 0 3 * * *") // ora 03:00
+
+    @Scheduled(cron = "0 9 22 * * *")
+
     @Transactional
     public void deleteExpiredReports() {
         LocalDateTime now = LocalDateTime.now();
-        reportRepo.deleteByStatusAndExpiresAtBefore("FIXED", now);
+        reportRepo.deleteByStatusAndExpiresAtBefore("Fixed", now);
     }
 }

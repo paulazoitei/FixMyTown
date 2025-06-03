@@ -1,10 +1,14 @@
 package com.example.fixmytown.report;
 
 import com.example.fixmytown.appuser.AppUser;
+import com.example.fixmytown.comment.Comment;
+import com.example.fixmytown.reaction.Reaction;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Entity
@@ -27,5 +31,13 @@ public class Report {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private AppUser user;
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Comment> comments;
+
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Reaction> reactions;
+
 
 }

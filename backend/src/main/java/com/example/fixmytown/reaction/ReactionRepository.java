@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     List<Reaction> findByReportId(Long reportId);
     Optional<Reaction> findByReportIdAndUserId(Long reportId, Long userId);
+
+
 }
