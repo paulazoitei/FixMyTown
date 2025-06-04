@@ -4,6 +4,9 @@ import com.example.fixmytown.appuser.AppUser;
 import com.example.fixmytown.report.Report;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,6 +26,7 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "report_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Report report;
 
 }
