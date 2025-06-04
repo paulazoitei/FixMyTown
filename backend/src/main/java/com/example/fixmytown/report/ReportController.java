@@ -57,7 +57,7 @@ public class ReportController {
             @RequestParam double longitude,
             @RequestParam Long userId,
             @RequestParam MultipartFile image
-    ) {
+    ) throws FirebaseMessagingException {
         AppUser user = userRepo.findById(userId).orElseThrow();
         String zone = zoneDetectionService.getZoneFromCoordinates(latitude, longitude);
 
@@ -74,74 +74,86 @@ public class ReportController {
         report.setCreatedAt(LocalDateTime.now());
 
         reportRepo.save(report);
-        return ResponseEntity.ok("Report saved");
-    }
+        List<AppUser> admins = userRepo.findByZoneAndAppUserRole(report.getZone(), AppUserRole.ADMIN);
+        for (AppUser admin : admins) {
+            String notifTitle = "New Report in Your Zone";
+            String notifBody = "A new report titled '" + report.getTitle() + "' was submitted in " + report.getZone() + ".";
 
 
-    @GetMapping("/user/me")
-    public List<Report> getReportsForCurrentUser() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        AppUser user = userRepo.findByEmail(email).orElseThrow();
-        return reportRepo.findByUser(user);
-    }
+            notificationService.saveNotification(admin, notifTitle, notifBody);
 
-    @GetMapping("/admin/me")
-    public List<Report> getReportsForAdminZone() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        AppUser admin = userRepo.findByEmail(email).orElseThrow();
 
-        if (admin.getAppUserRole() != AppUserRole.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can access this endpoint.");
+            if (admin.getFcmToken() != null && !admin.getFcmToken().isEmpty()) {
+                fcmService.sendNotification(admin.getFcmToken(), notifTitle, notifBody);
+            }
+        }
+            return ResponseEntity.ok("Report saved");
         }
 
-        return reportRepo.findByZone(admin.getZone());
-    }
-    @PutMapping("/admin/{id}/status")
-    public ResponseEntity<?> updateStatus(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> body) throws FirebaseMessagingException {
 
-        String newStatus = body.get("status");
-        Report report = reportRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Report not found"));
-
-        report.setStatus(newStatus);
-        if ("Fixed".equalsIgnoreCase(newStatus)) {
-            report.setExpiresAt(LocalDateTime.now().plusDays(1));
-        } else {
-            report.setExpiresAt(null);
+        @GetMapping("/user/me")
+        public List<Report> getReportsForCurrentUser () {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            AppUser user = userRepo.findByEmail(email).orElseThrow();
+            return reportRepo.findByUser(user);
         }
 
-        reportRepo.save(report);
+        @GetMapping("/admin/me")
+        public List<Report> getReportsForAdminZone () {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            AppUser admin = userRepo.findByEmail(email).orElseThrow();
 
+            if (admin.getAppUserRole() != AppUserRole.ADMIN) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can access this endpoint.");
+            }
 
-        String userToken = report.getUser().getFcmToken();
-
-
-        String title = report.getTitle();
-        String zone = report.getZone();
-        LocalDateTime created = report.getCreatedAt();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
-        String createdFormatted = created.format(formatter);
-
-        String message = "The report titled '" + title + "' from the zone '" + zone +
-                "' created at '" + createdFormatted +
-                "' has changed status to: " + newStatus;
-
-        if (userToken != null && !userToken.isBlank()) {
-            fcmService.sendNotification(userToken, "Report Status Updated", message);
-            notificationService.saveNotification(report.getUser(), "Report Status Updated", message);
-        } else {
-            System.out.println("❌ No FCM token available for user " + report.getUser().getEmail());
+            return reportRepo.findByZone(admin.getZone());
         }
-        return ResponseEntity.ok().build();
-    }
+        @PutMapping("/admin/{id}/status")
+        public ResponseEntity<?> updateStatus (
+                @PathVariable Long id,
+                @RequestBody Map < String, String > body) throws FirebaseMessagingException {
 
-    @GetMapping("/all")
-    public List<Report> getAllReports() {
-        return reportRepo.findAll();
-    }
+            String newStatus = body.get("status");
+            Report report = reportRepo.findById(id)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Report not found"));
 
+            report.setStatus(newStatus);
+            if ("Fixed".equalsIgnoreCase(newStatus)) {
+                report.setExpiresAt(LocalDateTime.now().plusDays(1));
+            } else {
+                report.setExpiresAt(null);
+            }
+
+            reportRepo.save(report);
+
+
+            String userToken = report.getUser().getFcmToken();
+
+
+            String title = report.getTitle();
+            String zone = report.getZone();
+            LocalDateTime created = report.getCreatedAt();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+            String createdFormatted = created.format(formatter);
+
+            String message = "The report titled '" + title + "' from the zone '" + zone +
+                    "' created at '" + createdFormatted +
+                    "' has changed status to: " + newStatus;
+
+            if (userToken != null && !userToken.isBlank()) {
+                fcmService.sendNotification(userToken, "Report Status Updated", message);
+                notificationService.saveNotification(report.getUser(), "Report Status Updated", message);
+            } else {
+                System.out.println("❌ No FCM token available for user " + report.getUser().getEmail());
+            }
+            return ResponseEntity.ok().build();
+        }
+
+        @GetMapping("/all")
+        public List<Report> getAllReports () {
+            return reportRepo.findAll();
+        }
 
 
 
