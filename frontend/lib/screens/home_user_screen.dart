@@ -100,6 +100,11 @@ class HomeUserScreen extends StatelessWidget {
                           title: 'Notifications',
                           onTap: () => Navigator.pushNamed(context, '/notifications'),
                         ),
+                        _buildFeatureCard(
+                          icon: Icons.map_outlined,
+                          title: 'My reports map',
+                          onTap: () => Navigator.pushNamed(context, '/my-reports-map'),
+                        )
 
                       ],
                     ),

@@ -29,24 +29,6 @@ class NotificationService {
         );
         print("🔁 Token sent to backend: ${response.statusCode}");
       }
-
-      // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      //   if (message.notification != null) {
-      //     showDialog(
-      //       context: navigatorKey.currentContext!,
-      //       builder: (context) => AlertDialog(
-      //         title: Text(message.notification!.title ?? "Notificare"),
-      //         content: Text(message.notification!.body ?? "Ai primit o notificare."),
-      //         actions: [
-      //           TextButton(
-      //             onPressed: () => Navigator.pop(context),
-      //             child: const Text("OK"),
-      //           )
-      //         ],
-      //       ),
-      //     );
-      //   }
-      // });
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         if (message.notification != null) {
           showDialog(

@@ -88,8 +88,8 @@ class HomeAdminScreen extends StatelessWidget {
                         ),
                         _buildFeatureCard(
                           icon: Icons.notifications_active,
-                          title: 'Alerts',
-                          onTap: () => Navigator.pushNamed(context, '/notifications'),
+                          title: 'Notifications',
+                          onTap: () => Navigator.pushNamed(context, '/admin-notifications'),
                         ),
                         _buildFeatureCard(
                           icon: Icons.thumb_up,
