@@ -18,6 +18,19 @@ class _MyReportsAdminScreenState extends State<MyReportsAdminScreen> {
   List<dynamic> reports = [];
   List<bool> expandedStates = [];
   bool isLoading = true;
+  bool isDeleting = false;
+  String? _normalizeStatus(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'received':
+        return 'Received';
+      case 'in progress':
+        return 'In Progress';
+      case 'fixed':
+        return 'Fixed';
+      default:
+        return null;
+    }
+  }
 
   @override
   void initState() {
@@ -101,14 +114,18 @@ class _MyReportsAdminScreenState extends State<MyReportsAdminScreen> {
             end: Alignment.bottomRight,
           ),
         ),
-        child:  isLoading ? const Center(child: CircularProgressIndicator())
+        child:  isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : isDeleting
+            ? const Center(child: CircularProgressIndicator())
             : reports.isEmpty
             ? const Center(
           child: Text(
-            "You have not submitted any reports yet.",
+            "No reports have been submitted in your area .",
             style: TextStyle(fontSize: 19, fontStyle: FontStyle.italic),
           ),
         )
+
             : Padding(
           padding: const EdgeInsets.only(top: 100),
           child: ListView.builder(
@@ -240,7 +257,7 @@ class _MyReportsAdminScreenState extends State<MyReportsAdminScreen> {
                                     ),
                                     const SizedBox(height: 8),
                                     DropdownButtonFormField<String>(
-                                      value: report['status'] ?? 'Received',
+                                      value: _normalizeStatus(report['status']),
                                       decoration: InputDecoration(
                                         filled: true,
                                         fillColor: Colors.white.withOpacity(0.2),
@@ -276,6 +293,135 @@ class _MyReportsAdminScreenState extends State<MyReportsAdminScreen> {
                                         }
                                       },
                                     ),
+                                    TextButton.icon(
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Colors.red.shade800,
+                                        textStyle: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      icon: const Icon(Icons.delete_forever, size: 22, color: Colors.redAccent),
+                                      label: const Text("Report Probably Fake – Delete"),
+                                      onPressed: () async {
+                                        final confirmed = await showDialog<bool>(
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            title: const Text("Confirm Deletion"),
+                                            content: const Text("Are you sure you want to delete this report?"),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(context, false),
+                                                child: const Text("Cancel"),
+                                              ),
+                                              ElevatedButton(
+                                                onPressed: () => Navigator.pop(context, true),
+                                                child: const Text("Delete"),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+
+                                        if (confirmed == true) {
+                                          setState(() => isDeleting = true);
+                                          final prefs = await SharedPreferences.getInstance();
+                                          final token = prefs.getString('jwtToken');
+
+                                          final response = await http.delete(
+                                            Uri.parse("http://10.0.2.2:8081/api/v1/reports/admin/${report['id']}"),
+                                            headers: {
+                                              "Authorization": "Bearer $token",
+                                            },
+                                          );
+                                          setState(() => isDeleting = false);
+
+                                          if (response.statusCode == 200) {
+                                            setState(() {
+                                              reports.removeAt(index);
+                                              expandedStates.removeAt(index);
+                                            });
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text("Report deleted.")),
+                                            );
+                                          } else {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text("Failed to delete report.")),
+                                            );
+                                          }
+                                        }
+                                      },
+                                    ),
+                                    TextButton.icon(
+                                      onPressed: () async {
+                                        final prefs = await SharedPreferences.getInstance();
+                                        final token = prefs.getString('jwtToken');
+
+                                        showDialog(
+                                          context: context,
+                                          barrierDismissible: false,
+                                          builder: (_) => const Center(child: CircularProgressIndicator()),
+                                        );
+
+                                        final response = await http.post(
+                                          Uri.parse("http://10.0.2.2:8081/api/v1/reports/admin/${report['id']}/ai-check"),
+                                          headers: {
+                                            "Authorization": "Bearer $token",
+                                            "Content-Type": "application/json",
+                                          },
+                                        );
+                                        Navigator.pop(context); // închide progress dialog
+
+                                        if (response.statusCode == 200) {
+                                          final aiVerdict = jsonDecode(response.body)['choices'][0]['message']['content'];
+
+                                          showDialog(
+                                            context: context,
+                                            builder: (_) => AlertDialog(
+                                              title: const Text("AI Verdict"),
+                                              content: Text(aiVerdict),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () => Navigator.pop(context),
+                                                  child: const Text("Cancel"),
+                                                ),
+                                                ElevatedButton(
+                                                  onPressed: () async {
+                                                    Navigator.pop(context); // închide dialogul AI Verdict
+                                                    setState(() => isDeleting = true);
+                                                    final deleteResponse = await http.delete(
+                                                      Uri.parse("http://10.0.2.2:8081/api/v1/reports/admin/${report['id']}"),
+                                                      headers: {
+                                                        "Authorization": "Bearer $token",
+                                                      },
+                                                    );
+                                                    setState(() => isDeleting = false);
+
+                                                    if (deleteResponse.statusCode == 200) {
+                                                      setState(() {
+                                                        reports.removeAt(index);
+                                                        expandedStates.removeAt(index);
+                                                      });
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        const SnackBar(content: Text("Report deleted based on AI check.")),
+                                                      );
+                                                    } else {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        const SnackBar(content: Text("Failed to delete report after AI check.")),
+                                                      );
+                                                    }
+                                                  },
+                                                  child: const Text("Delete Report"),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      icon: const Icon(Icons.smart_toy, color: Colors.blueAccent),
+                                      label: const Text("AI Check"),
+                                    )
+
+
                                   ],
                                 ),
                               )
