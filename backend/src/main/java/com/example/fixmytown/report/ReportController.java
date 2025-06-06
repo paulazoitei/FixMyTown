@@ -113,6 +113,11 @@ public class ReportController {
 
         return reportRepo.findByZone(admin.getZone());
     }
+    @GetMapping("/all")
+    public List<Report> getAllReports() {
+        return reportRepo.findAll();
+    }
+
 
     @PutMapping("/admin/{id}/status")
     public ResponseEntity<?> updateStatus(
@@ -202,5 +207,78 @@ public class ReportController {
             return ResponseEntity.ok(response.body().string());
         }
     }
+    @GetMapping("/admin/me/profile")
+    public ResponseEntity<?> getAdminProfileWithStats() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        AppUser admin = userRepo.findByEmail(email).orElseThrow();
+
+        if (admin.getAppUserRole() != AppUserRole.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can access this.");
+        }
+
+        String zone = admin.getZone();
+
+        List<Report> reports = reportRepo.findByZone(zone);
+        int totalReports = reports.size();
+
+        int reportsLastMonth = (int) reports.stream()
+                .filter(r -> r.getCreatedAt().isAfter(LocalDateTime.now().minusMonths(1)))
+                .count();
+
+        int fixedReports = (int) reports.stream()
+                .filter(r -> "Fixed".equalsIgnoreCase(r.getStatus()))
+                .count();
+
+        Map<String, Object> response = Map.of(
+                "role", admin.getAppUserRole().name(),
+                "email", admin.getEmail(),
+                "firstName", admin.getFirstName(),
+                "lastName", admin.getLastName(),
+                "zone", zone,
+                "totalReports", totalReports,
+                "lastMonthReports", reportsLastMonth,
+                "fixedReports", fixedReports
+        );
+
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/user/me/profile")
+    public ResponseEntity<?> getUserProfileWithStats() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        AppUser user = userRepo.findByEmail(email).orElseThrow();
+
+        List<Report> reports = reportRepo.findByUser(user);
+        int totalReports = reports.size();
+
+        int fixedReports = (int) reports.stream()
+                .filter(r -> "Fixed".equalsIgnoreCase(r.getStatus()))
+                .count();
+
+        int reportsThisMonth = (int) reports.stream()
+                .filter(r -> r.getCreatedAt().isAfter(LocalDateTime.now().minusMonths(1)))
+                .count();
+
+        List<String> distinctZones = reports.stream()
+                .map(Report::getZone)
+                .filter(z -> z != null && !z.isBlank())
+                .distinct()
+                .toList();
+
+        Map<String, Object> response = Map.of(
+                "role", user.getAppUserRole().name(),
+                "email", user.getEmail(),
+                "firstName", user.getFirstName(),
+                "lastName", user.getLastName(),
+                "totalReports", totalReports,
+                "fixedReports", fixedReports,
+                "reportsThisMonth", reportsThisMonth,
+                "zones", distinctZones
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+
+
 
 }
