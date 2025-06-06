@@ -15,6 +15,8 @@ import 'firebase_options.dart';
 import 'package:licenta_frontend/screens/notifications_screen.dart';
 import 'package:licenta_frontend/screens/my_reports_map.dart';
 import 'package:licenta_frontend/screens/admin_notifications.dart';
+import 'package:licenta_frontend/screens/profile_admin_screen.dart';
+import 'package:licenta_frontend/screens/profile_user_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -53,7 +55,9 @@ class MyApp extends StatelessWidget {
         '/reports-map': (context) => const ReportsMapScreen(),
         '/notifications':(context)=> const NotificationsScreen(),
         '/my-reports-map': (context) => const MyReportsMapScreen(),
-        '/admin-notifications':(context)=> const AdminNotificationsScreen()
+        '/admin-notifications':(context)=> const AdminNotificationsScreen(),
+        '/profile-admin':(context)=>const ProfileAdminScreen(),
+        '/profile-user':(context)=> const ProfileUserScreen()
 
       },
     );

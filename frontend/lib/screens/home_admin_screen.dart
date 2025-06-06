@@ -92,15 +92,10 @@ class HomeAdminScreen extends StatelessWidget {
                           onTap: () => Navigator.pushNamed(context, '/admin-notifications'),
                         ),
                         _buildFeatureCard(
-                          icon: Icons.thumb_up,
-                          title: 'Vote',
-                          onTap: () => Navigator.pushNamed(context, '/vote'),
-                        ),
-                        _buildFeatureCard(
-                          icon: Icons.feedback,
-                          title: 'Comments',
-                          onTap: () => Navigator.pushNamed(context, '/feedback'),
-                        ),
+                          icon: Icons.person,
+                          title: 'Profile',
+                          onTap: () => Navigator.pushNamed(context, '/profile-admin'),
+                        )
                       ],
                     ),
                   ),
