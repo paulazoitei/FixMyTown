@@ -2,6 +2,8 @@ package com.example.fixmytown.comment;
 
 import com.example.fixmytown.appuser.AppUser;
 import com.example.fixmytown.appuser.AppUserRepository;
+import com.example.fixmytown.firebase.FCMService;
+import com.example.fixmytown.notification.NotificationService;
 import com.example.fixmytown.report.Report;
 import com.example.fixmytown.report.ReportRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,8 @@ public class CommentController {
     private final CommentRepository commentRepo;
     private final AppUserRepository userRepo;
     private final ReportRepository reportRepo;
+    private final FCMService fcmService;
+    private final NotificationService notificationService;
 
     @PostMapping("/{reportId}")
     public ResponseEntity<?> addComment(@PathVariable Long reportId, @RequestBody Map<String, String> body) {
@@ -36,6 +40,19 @@ public class CommentController {
         comment.setReport(report);
 
         commentRepo.save(comment);
+        if (!report.getUser().getId().equals(user.getId())) {
+            String title = "New Comment";
+            String notificationBody = user.getFirstName() +" "+ user.getLastName()+ " commented on your report: \"" + report.getTitle() + "\"";
+
+            notificationService.saveNotification(report.getUser(), title, notificationBody);
+
+            try {
+                fcmService.sendNotificationToUser(report.getUser(), title, notificationBody);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
         return ResponseEntity.ok().build();
     }
 

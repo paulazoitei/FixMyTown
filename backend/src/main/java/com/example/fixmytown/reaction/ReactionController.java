@@ -2,6 +2,8 @@ package com.example.fixmytown.reaction;
 
 import com.example.fixmytown.appuser.AppUser;
 import com.example.fixmytown.appuser.AppUserRepository;
+import com.example.fixmytown.firebase.FCMService;
+import com.example.fixmytown.notification.NotificationService;
 import com.example.fixmytown.report.Report;
 import com.example.fixmytown.report.ReportRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,9 @@ public class ReactionController {
     private final ReactionRepository reactionRepo;
     private final AppUserRepository userRepo;
     private final ReportRepository reportRepo;
+    private final FCMService fcmService;
+    private final NotificationService notificationService;
+
 
     @PostMapping("/{reportId}")
     public ResponseEntity<?> react(@PathVariable Long reportId, @RequestBody Map<String, String> body) {
@@ -38,6 +43,18 @@ public class ReactionController {
         reaction.setType(type);
 
         reactionRepo.save(reaction);
+        if (!report.getUser().getId().equals(user.getId())) {
+            String title = "New Reaction";
+            String notificationBody = user.getFirstName()+" "+user.getLastName() + " reacted to your report: \"" + report.getTitle() + "\"";
+
+            notificationService.saveNotification(report.getUser(), title, notificationBody);
+
+            try {
+                fcmService.sendNotificationToUser(report.getUser(), title, notificationBody);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         return ResponseEntity.ok().build();
     }
 

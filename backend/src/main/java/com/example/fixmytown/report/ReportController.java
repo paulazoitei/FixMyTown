@@ -87,8 +87,10 @@ public class ReportController {
             String notifTitle = "New Report in Your Zone";
             String notifBody = "A new report titled '" + title + "' was submitted in " + zone + ".";
             notificationService.saveNotification(admin, notifTitle, notifBody);
-            if (admin.getFcmToken() != null && !admin.getFcmToken().isBlank()) {
-                fcmService.sendNotification(admin.getFcmToken(), notifTitle, notifBody);
+            try {
+                fcmService.sendNotificationToUser(admin, notifTitle, notifBody);
+            } catch (Exception e) {
+                e.printStackTrace(); // sau log.error(...)
             }
         }
 
@@ -125,27 +127,33 @@ public class ReportController {
             @RequestBody Map<String, String> body) throws FirebaseMessagingException {
 
         String newStatus = body.get("status");
-        Report report = reportRepo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Report not found"));
+        Report report = reportRepo.findById(id).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Report not found"));
 
         report.setStatus(newStatus);
         report.setExpiresAt("Fixed".equalsIgnoreCase(newStatus) ? LocalDateTime.now().plusDays(1) : null);
-
         reportRepo.save(report);
 
-        String userToken = report.getUser().getFcmToken();
+
         String title = report.getTitle();
         String zone = report.getZone();
         String createdFormatted = report.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"));
 
         String message = "The report titled '" + title + "' from the zone '" + zone + "' created at '" + createdFormatted + "' has changed status to: " + newStatus;
 
-        if (userToken != null && !userToken.isBlank()) {
-            fcmService.sendNotification(userToken, "Report Status Updated", message);
-            notificationService.saveNotification(report.getUser(), "Report Status Updated", message);
+
+        try {
+            fcmService.sendNotificationToUser(report.getUser(), "Report Status Updated", message);
+        } catch (Exception e) {
+            e.printStackTrace(); // Poți loga mai elegant cu un logger
         }
+
+
+        notificationService.saveNotification(report.getUser(), "Report Status Updated", message);
 
         return ResponseEntity.ok().build();
     }
+
 
     @DeleteMapping("/admin/{id}")
     public ResponseEntity<?> deleteReportByAdmin(@PathVariable Long id) {
@@ -168,11 +176,12 @@ public class ReportController {
     private String openaiApiKey;
     // In ReportController.java
 
-    @PostMapping("/admin/{id}/ai-check")
+    @PostMapping(value = "/admin/{id}/ai-check", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> checkIfFake(@PathVariable Long id) throws IOException {
         Report report = reportRepo.findById(id).orElseThrow();
 
-        String imageUrl = "https://1d2e-92-83-215-38.ngrok-free.app" + report.getImageUrl();
+        String imageUrl = "https://37f3-82-77-237-107.ngrok-free.app" + report.getImageUrl();
+        System.out.println("Image URL: " + imageUrl);
         String prompt = "Give a very small analyze of the report below and give a very clear conclusion it's seems to be fake or real. "
                 + "Title: " + report.getTitle()
                 + "\nDescription: " + report.getDescription()
@@ -183,12 +192,18 @@ public class ReportController {
 
 
         String jsonPayload = new ObjectMapper().writeValueAsString(Map.of(
-                "model", "gpt-4",
-                "messages", List.of(Map.of(
-                        "role", "user",
-                        "content", prompt
-                ))
+                "model", "gpt-4o",
+                "messages", List.of(
+                        Map.of(
+                                "role", "user",
+                                "content", List.of(
+                                        Map.of("type", "text", "text", prompt),
+                                        Map.of("type", "image_url", "image_url", Map.of("url", imageUrl))
+                                )
+                        )
+                )
         ));
+
 
         okhttp3.MediaType mediaType = okhttp3.MediaType.get("application/json");
         okhttp3.RequestBody body = okhttp3.RequestBody.create(jsonPayload, mediaType);

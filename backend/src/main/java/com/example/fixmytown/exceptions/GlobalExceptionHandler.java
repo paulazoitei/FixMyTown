@@ -30,11 +30,22 @@ public class GlobalExceptionHandler {
         return buildResponse("User is disabled", HttpStatus.FORBIDDEN, request);
     }
 
-    // 4. Alte excepții (fallback general)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleAll(Exception ex, HttpServletRequest request) {
-        return buildResponse("Unexpected error: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+        ApiError error = new ApiError(
+                "Unexpected error: " + ex.getMessage(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                request.getRequestURI(),
+                ZonedDateTime.now()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON) // 👈 asta e cheia
+                .body(error);
     }
+
 
     // Utilitar pentru a construi un răspuns standardizat
     private ResponseEntity<ApiError> buildResponse(String message, HttpStatus status, HttpServletRequest request) {
