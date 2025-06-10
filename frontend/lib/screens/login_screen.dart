@@ -55,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('jwtToken', token);
         await prefs.setInt('userId', userId);
-
+        await NotificationService().init(navigatorKey);
 
 
 

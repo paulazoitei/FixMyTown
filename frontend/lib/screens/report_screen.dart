@@ -28,6 +28,46 @@ class _ReportScreenState extends State<ReportScreen> {
   void initState() {
     super.initState();
   }
+  void _showCustomDialog(String title, String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.notifications_active, color: Colors.green, size: 48),
+              const SizedBox(height: 16),
+              Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00695C),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text("OK"),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Future<void> _initLocation() async {
     try {
@@ -138,9 +178,8 @@ class _ReportScreenState extends State<ReportScreen> {
         print('Body: $responseBody');
 
         if (response.statusCode == 200) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Raport trimis!")),
-          );
+          _showCustomDialog("Success", "Report was sent successfully!");
+
         } else if (response.statusCode == 403) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Acces interzis (403). Verifică tokenul.")),
@@ -157,9 +196,7 @@ class _ReportScreenState extends State<ReportScreen> {
         );
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Completează toate câmpurile.")),
-      );
+      _showCustomDialog("Incomplete", "Please complete all fields and add a photo.");
     }
   }
 

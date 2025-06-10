@@ -54,7 +54,7 @@ class _MyReportsAdminScreenState extends State<MyReportsAdminScreen> {
     if (response.statusCode == 200) {
       setState(() {
         reports = jsonDecode(response.body);
-        expandedStates = List.filled(reports.length, false);
+        expandedStates = List.generate(reports.length, (_) => false);
         isLoading = false;
       });
     } else {
@@ -303,53 +303,64 @@ class _MyReportsAdminScreenState extends State<MyReportsAdminScreen> {
                                       ),
                                       icon: const Icon(Icons.delete_forever, size: 22, color: Colors.redAccent),
                                       label: const Text("Report Probably Fake – Delete"),
-                                      onPressed: () async {
-                                        final confirmed = await showDialog<bool>(
-                                          context: context,
-                                          builder: (context) => AlertDialog(
-                                            title: const Text("Confirm Deletion"),
-                                            content: const Text("Are you sure you want to delete this report?"),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () => Navigator.pop(context, false),
-                                                child: const Text("Cancel"),
-                                              ),
-                                              ElevatedButton(
-                                                onPressed: () => Navigator.pop(context, true),
-                                                child: const Text("Delete"),
-                                              ),
-                                            ],
-                                          ),
-                                        );
 
-                                        if (confirmed == true) {
-                                          setState(() => isDeleting = true);
-                                          final prefs = await SharedPreferences.getInstance();
-                                          final token = prefs.getString('jwtToken');
-
-                                          final response = await http.delete(
-                                            Uri.parse("http://10.0.2.2:8081/api/v1/reports/admin/${report['id']}"),
-                                            headers: {
-                                              "Authorization": "Bearer $token",
-                                            },
+                                        onPressed: () async {
+                                          final confirmed = await showDialog<bool>(
+                                            context: context,
+                                            builder: (context) => AlertDialog(
+                                              title: const Text("Confirm Deletion"),
+                                              content: const Text("Are you sure you want to delete this report?"),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () => Navigator.pop(context, false),
+                                                  child: const Text("Cancel"),
+                                                ),
+                                                ElevatedButton(
+                                                  onPressed: () => Navigator.pop(context, true),
+                                                  child: const Text("Delete"),
+                                                ),
+                                              ],
+                                            ),
                                           );
-                                          setState(() => isDeleting = false);
 
-                                          if (response.statusCode == 200) {
-                                            setState(() {
-                                              reports.removeAt(index);
-                                              expandedStates.removeAt(index);
-                                            });
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(content: Text("Report deleted.")),
+                                          if (confirmed == true) {
+                                            setState(() => isDeleting = true);
+                                            final prefs = await SharedPreferences.getInstance();
+                                            final token = prefs.getString('jwtToken');
+
+                                            final response = await http.delete(
+                                              Uri.parse("http://10.0.2.2:8081/api/v1/reports/admin/${report['id']}"),
+                                              headers: {
+                                                "Authorization": "Bearer $token",
+                                              },
                                             );
-                                          } else {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(content: Text("Failed to delete report.")),
-                                            );
+                                            setState(() => isDeleting = false);
+
+                                            if (!mounted) return;
+
+                                            if (response.statusCode == 200) {
+                                              setState(() {
+                                                reports.removeAt(index);
+                                                expandedStates.removeAt(index);
+                                              });
+
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text("Report deleted."),
+                                                  ),
+                                                );
+                                              }
+
+                                            } else {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(content: Text("Failed to delete report.")),
+                                              );
+
+                                            }
                                           }
-                                        }
-                                      },
+                                        },
+
                                     ),
                                     TextButton.icon(
                                       onPressed: () async {
@@ -376,45 +387,84 @@ class _MyReportsAdminScreenState extends State<MyReportsAdminScreen> {
 
                                           showDialog(
                                             context: context,
-                                            builder: (_) => AlertDialog(
-                                              title: const Text("AI Verdict"),
-                                              content: Text(aiVerdict),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () => Navigator.pop(context),
-                                                  child: const Text("Cancel"),
-                                                ),
-                                                ElevatedButton(
-                                                  onPressed: () async {
-                                                    Navigator.pop(context); // închide dialogul AI Verdict
-                                                    setState(() => isDeleting = true);
-                                                    final deleteResponse = await http.delete(
-                                                      Uri.parse("http://10.0.2.2:8081/api/v1/reports/admin/${report['id']}"),
-                                                      headers: {
-                                                        "Authorization": "Bearer $token",
-                                                      },
-                                                    );
-                                                    setState(() => isDeleting = false);
+                                            barrierDismissible: true,
+                                            builder: (_) => Dialog(
+                                              backgroundColor: Colors.white,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                              child: Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    const Icon(Icons.smart_toy, color: Colors.green, size: 48),
+                                                    const SizedBox(height: 16),
+                                                    const Text(
+                                                      "AI Verdict",
+                                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                                                    ),
+                                                    const SizedBox(height: 12),
+                                                    Text(
+                                                      aiVerdict,
+                                                      textAlign: TextAlign.center,
+                                                      style: const TextStyle(fontSize: 16),
+                                                    ),
+                                                    const SizedBox(height: 20),
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                      children: [
+                                                        OutlinedButton(
+                                                          onPressed: () => Navigator.pop(context),
+                                                          child: const Text("Cancel"),
+                                                        ),
+                                                        ElevatedButton(
 
-                                                    if (deleteResponse.statusCode == 200) {
-                                                      setState(() {
-                                                        reports.removeAt(index);
-                                                        expandedStates.removeAt(index);
-                                                      });
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        const SnackBar(content: Text("Report deleted based on AI check.")),
-                                                      );
-                                                    } else {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        const SnackBar(content: Text("Failed to delete report after AI check.")),
-                                                      );
-                                                    }
-                                                  },
-                                                  child: const Text("Delete Report"),
+                                                            onPressed: () async {
+                                                              Navigator.pop(context); // închide dialogul
+                                                              await Future.delayed(Duration(milliseconds: 100)); // lasă timp să se închidă
+
+                                                              if (!mounted) return;
+
+                                                              setState(() => isDeleting = true);
+                                                              final deleteResponse = await http.delete(
+                                                                Uri.parse("http://10.0.2.2:8081/api/v1/reports/admin/${report['id']}"),
+                                                                headers: {
+                                                                  "Authorization": "Bearer $token",
+                                                                },
+                                                              );
+                                                              setState(() => isDeleting = false);
+
+                                                              if (!mounted) return;
+
+                                                              if (deleteResponse.statusCode == 200) {
+                                                                setState(() {
+                                                                  reports.removeAt(index);
+                                                                  expandedStates.removeAt(index);
+                                                                });
+                                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                                  const SnackBar(content: Text("Report deleted based on AI check.")),
+                                                                );
+                                                              } else {
+                                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                                  const SnackBar(content: Text("Failed to delete report after AI check.")),
+                                                                );
+                                                              }
+                                                            },
+
+                                                            style: ElevatedButton.styleFrom(
+                                                            backgroundColor: const Color(0xFF00695C),
+                                                            foregroundColor: Colors.white,
+                                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                          ),
+                                                          child: const Text("Delete Report"),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
                                                 ),
-                                              ],
+                                              ),
                                             ),
                                           );
+
                                         }
                                       },
                                       icon: const Icon(Icons.smart_toy, color: Colors.blueAccent),

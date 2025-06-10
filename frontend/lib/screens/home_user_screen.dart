@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/notification_service.dart';
+
 class HomeUserScreen extends StatelessWidget {
   const HomeUserScreen({super.key});
 
@@ -49,6 +51,8 @@ class HomeUserScreen extends StatelessWidget {
                           onSelected: (value) async {
                             if (value == 'logout') {
                               final prefs = await SharedPreferences.getInstance();
+                              final notificationService = NotificationService();
+                              await notificationService.removeTokenFromBackend();
                               await prefs.remove('jwtToken');
                               if (context.mounted) {
                                 Navigator.pushReplacementNamed(context, '/login');
