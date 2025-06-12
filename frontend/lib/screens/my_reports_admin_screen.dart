@@ -380,7 +380,7 @@ class _MyReportsAdminScreenState extends State<MyReportsAdminScreen> {
                                             "Content-Type": "application/json",
                                           },
                                         );
-                                        Navigator.pop(context); // închide progress dialog
+                                        Navigator.pop(context);
 
                                         if (response.statusCode == 200) {
                                           final aiVerdict = jsonDecode(response.body)['choices'][0]['message']['content'];
@@ -419,8 +419,8 @@ class _MyReportsAdminScreenState extends State<MyReportsAdminScreen> {
                                                         ElevatedButton(
 
                                                             onPressed: () async {
-                                                              Navigator.pop(context); // închide dialogul
-                                                              await Future.delayed(Duration(milliseconds: 100)); // lasă timp să se închidă
+                                                              Navigator.pop(context);
+                                                              await Future.delayed(Duration(milliseconds: 100));
 
                                                               if (!mounted) return;
 

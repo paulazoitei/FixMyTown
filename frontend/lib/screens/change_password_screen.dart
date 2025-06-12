@@ -128,11 +128,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2E7D32),
                         foregroundColor: Colors.white,
-                        overlayColor: const Color(0xFF1B5E20).withOpacity(0.2), // verde închis, subtil la apăsare
+                        overlayColor: const Color(0xFF1B5E20).withOpacity(0.2),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        elevation: 4, // efect ușor 3D
+                        elevation: 4,
                         shadowColor: Colors.black45,
                       ),
                       child: const Text(
@@ -148,7 +148,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     message,
                     style: TextStyle(
                       color: messageColor,
-                      fontSize: 16, // ← mărime mai vizibilă pentru eroare
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                     textAlign: TextAlign.center,

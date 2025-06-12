@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'package:licenta_frontend/screens/report_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/notification_service.dart';
-import 'register_screen.dart';
 import 'forgot_password_screen.dart';
 import 'home_user_screen.dart';
 import 'choose_role_screen.dart';

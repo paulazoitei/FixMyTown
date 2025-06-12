@@ -8,15 +8,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 class NotificationService {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 
-  /// Inițializează serviciul de notificări
+
   Future<void> init(GlobalKey<NavigatorState> navigatorKey) async {
     NotificationSettings settings = await _messaging.requestPermission();
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       print("🔓 Notifications permission granted");
-      await _registerTokenToBackend(); // trimite token-ul către backend
+      await _registerTokenToBackend();
 
-      // Ascultă notificări în foreground
+
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         if (message.notification != null) {
           _showCustomDialog(navigatorKey, message.notification!.title ?? "Notification",
@@ -28,7 +28,7 @@ class NotificationService {
     }
   }
 
-  /// Trimite tokenul FCM la backend pentru a-l asocia cu user-ul logat
+
   Future<void> _registerTokenToBackend() async {
     try {
 
@@ -54,7 +54,7 @@ class NotificationService {
     }
   }
 
-  /// Șterge tokenul la logout (apelează asta la logout)
+
   Future<void> removeTokenFromBackend() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -74,7 +74,7 @@ class NotificationService {
     }
   }
 
-  /// Afișează dialog personalizat la primirea notificării
+
   void _showCustomDialog(
       GlobalKey<NavigatorState> navigatorKey, String title, String body) {
     showDialog(

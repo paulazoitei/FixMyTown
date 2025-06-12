@@ -154,7 +154,7 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
           context: context,
           builder: (_) => Dialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            backgroundColor: const Color(0xffe1f8dc), // verde pal
+            backgroundColor: const Color(0xffe1f8dc),
             child: Container(
               padding: const EdgeInsets.all(20),
               constraints: const BoxConstraints(maxHeight: 300),
@@ -372,7 +372,7 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // T I T L E
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -395,7 +395,7 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
           ),
           const SizedBox(height: 10),
 
-          // S T A T U S
+
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
@@ -413,11 +413,11 @@ class _ReportDetailsScreenState extends State<ReportDetailsScreen> {
           ),
           const SizedBox(height: 10),
 
-          // D E S C R I P T I O N
+
           Text(report['description'] ?? 'No description', style: const TextStyle(fontSize: 16)),
           const SizedBox(height: 10),
 
-          // I M A G E
+
           if (report['imageUrl'] != null && report['imageUrl'].toString().isNotEmpty)
             ClipRRect(
               borderRadius: BorderRadius.circular(16),

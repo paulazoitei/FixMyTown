@@ -12,7 +12,6 @@ import 'screens/my_reports_user_screen.dart';
 import 'screens/reports_map_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'package:licenta_frontend/screens/notifications_screen.dart';
 import 'package:licenta_frontend/screens/my_reports_map.dart';
 import 'package:licenta_frontend/screens/admin_notifications.dart';
 import 'package:licenta_frontend/screens/profile_admin_screen.dart';

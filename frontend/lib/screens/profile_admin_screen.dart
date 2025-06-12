@@ -135,7 +135,7 @@ class _ProfileAdminScreenState extends State<ProfileAdminScreen> {
                     borderRadius: BorderRadius.circular(60),
                     child: Image.asset(
                       'assets/images/profile_default.png',
-                      width: 120, // ⬅️ mai mic
+                      width: 120,
                       height: 120,
                       fit: BoxFit.cover,
                     ),
@@ -144,7 +144,7 @@ class _ProfileAdminScreenState extends State<ProfileAdminScreen> {
                   Text(
                     "${profileData!['firstName']} ${profileData!['lastName']}",
                     style: GoogleFonts.poppins(
-                      fontSize: 22, // ⬆️ font puțin mai mare
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
