@@ -5,6 +5,6 @@ public class ReportRequest {
     public String description;
     public double latitude;
     public double longitude;
-    public String imageUrl; // sau base64
+    public String imageUrl;
     public Long userId;
 }

@@ -49,7 +49,7 @@ public class RegistrationService {
                 request.getEmail(),
                 request.getPassword(),
                 request.getAppUserRole() != null ? request.getAppUserRole() : AppUserRole.USER,
-                request.getZone() // will be null for USER
+                request.getZone()
         );
         if (request.getZone() != null && request.getAppUserRole() == AppUserRole.ADMIN) {
             user.setZone(request.getZone());

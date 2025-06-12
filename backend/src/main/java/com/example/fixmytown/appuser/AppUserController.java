@@ -18,13 +18,5 @@ public class AppUserController {
         this.userRepository = userRepository;
     }
 
-//    @PostMapping("/fcm-token")
-//    public ResponseEntity<?> saveFcmToken(@RequestBody Map<String, String> request) {
-//        String token = request.get("token");
-//        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-//        AppUser user = userRepository.findByEmail(email).orElseThrow();
-//        user.setFcmToken(token);
-//        userRepository.save(user);
-//        return ResponseEntity.ok().build();
-//    }
+
 }

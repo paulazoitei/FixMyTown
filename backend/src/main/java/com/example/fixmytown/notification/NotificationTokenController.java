@@ -29,8 +29,8 @@ public class NotificationTokenController {
 
         String token = body.get("token");
 
-        tokenRepo.findByUser(user).ifPresent(tokenRepo::delete); // sterge tokenul vechi (1 la 1)
-        // elimină dacă alt user a avut același token
+        tokenRepo.findByUser(user).ifPresent(tokenRepo::delete);
+
         tokenRepo.findByToken(token).ifPresent(tokenRepo::delete);
         NotificationTokenEntity entity = new NotificationTokenEntity();
         entity.setToken(token);

@@ -34,7 +34,7 @@ public class ReactionController {
 
         ReactionType type = ReactionType.valueOf(body.get("type"));
 
-        // Suprascrie reacția anterioară dacă există
+
         Reaction reaction = reactionRepo.findByReportIdAndUserId(reportId, user.getId())
                 .orElse(new Reaction());
 

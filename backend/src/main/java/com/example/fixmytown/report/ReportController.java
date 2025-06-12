@@ -90,7 +90,7 @@ public class ReportController {
             try {
                 fcmService.sendNotificationToUser(admin, notifTitle, notifBody);
             } catch (Exception e) {
-                e.printStackTrace(); // sau log.error(...)
+                e.printStackTrace();
             }
         }
 
@@ -145,7 +145,7 @@ public class ReportController {
         try {
             fcmService.sendNotificationToUser(report.getUser(), "Report Status Updated", message);
         } catch (Exception e) {
-            e.printStackTrace(); // Poți loga mai elegant cu un logger
+            e.printStackTrace();
         }
 
 
@@ -174,13 +174,13 @@ public class ReportController {
     }
     @Value("${openai.api.key}")
     private String openaiApiKey;
-    // In ReportController.java
+
 
     @PostMapping(value = "/admin/{id}/ai-check", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> checkIfFake(@PathVariable Long id) throws IOException {
         Report report = reportRepo.findById(id).orElseThrow();
 
-        String imageUrl = "https://37f3-82-77-237-107.ngrok-free.app" + report.getImageUrl();
+        String imageUrl = "https://deeb-82-77-237-107.ngrok-free.app" + report.getImageUrl();
         System.out.println("Image URL: " + imageUrl);
         String prompt = "Give a very small analyze of the report below and give a very clear conclusion it's seems to be fake or real. "
                 + "Title: " + report.getTitle()
@@ -211,7 +211,7 @@ public class ReportController {
         Request request = new Request.Builder()
                 .url("https://api.openai.com/v1/chat/completions")
                 .post(body)
-                .addHeader("Authorization", "Bearer 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 " )
+                .addHeader("Authorization", "Bearer " +openaiApiKey)
                 .addHeader("Content-Type", "application/json")
                 .build();
 

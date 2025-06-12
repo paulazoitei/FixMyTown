@@ -83,7 +83,7 @@ public class PasswordController {
                 user.getEmail(),
                 buildResetPasswordEmail(user.getFirstName(), link),"Forgot Password"
         );
-//        System.out.println("🔗 Reset password link: " + link);
+
 
 
         return ResponseEntity.ok("Email de resetare parolă trimis.");

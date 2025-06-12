@@ -17,9 +17,9 @@ public class RegistrationController {
     public ResponseEntity<String> register(@RequestBody RegistrationRequest request) {
         try {
             String result = registrationService.register(request);
-            return ResponseEntity.ok(result); // status 200
+            return ResponseEntity.ok(result);
         } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(e.getMessage()); // status 400
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
