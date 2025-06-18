@@ -180,7 +180,7 @@ public class ReportController {
     public ResponseEntity<String> checkIfFake(@PathVariable Long id) throws IOException {
         Report report = reportRepo.findById(id).orElseThrow();
 
-        String imageUrl = "https://deeb-82-77-237-107.ngrok-free.app" + report.getImageUrl();
+        String imageUrl = "https://abeb-92-83-215-38.ngrok-free.app" + report.getImageUrl();
         System.out.println("Image URL: " + imageUrl);
         String prompt = "Give a very small analyze of the report below and give a very clear conclusion it's seems to be fake or real. "
                 + "Title: " + report.getTitle()
