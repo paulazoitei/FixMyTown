@@ -38,3 +38,6 @@ build/
 /frontend/.packages
 /frontend/build/
 /frontend/flutter_*
+
+/backend/src/main/resources/application.yml
+/backend/src/main/resources/serviceAccountKey.json
