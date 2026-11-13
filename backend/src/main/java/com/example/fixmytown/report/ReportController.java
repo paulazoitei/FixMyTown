@@ -22,8 +22,12 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -180,17 +184,25 @@ public class ReportController {
     public ResponseEntity<String> checkIfFake(@PathVariable Long id) throws IOException {
         Report report = reportRepo.findById(id).orElseThrow();
 
-        String imageUrl = "https://3a03-82-77-245-234.ngrok-free.app" + report.getImageUrl();
-        System.out.println("Image URL: " + imageUrl);
+        // Pregătim textul prompt
         String prompt = "Give a very small analyze of the report below and give a very clear conclusion it's seems to be fake or real. "
                 + "Title: " + report.getTitle()
                 + "\nDescription: " + report.getDescription()
                 + "\nLocation: lat " + report.getLatitude() + ", lng " + report.getLongitude();
 
+        // 1. Obținem calea fișierului
+        Path imagePath = Paths.get("uploads", Paths.get(report.getImageUrl()).getFileName().toString());
 
-        OkHttpClient client = new OkHttpClient();
+        // 2. Citim fișierul în byte[]
+        byte[] imageBytes = Files.readAllBytes(imagePath);
 
+        // 3. Codificăm în base64
+        String base64Image = Base64.getEncoder().encodeToString(imageBytes);
 
+        // 4. Construim URL-ul inline
+        String imageData = "data:image/jpeg;base64," + base64Image;
+
+        // 5. Construim payload-ul OpenAI
         String jsonPayload = new ObjectMapper().writeValueAsString(Map.of(
                 "model", "gpt-4o",
                 "messages", List.of(
@@ -198,20 +210,20 @@ public class ReportController {
                                 "role", "user",
                                 "content", List.of(
                                         Map.of("type", "text", "text", prompt),
-                                        Map.of("type", "image_url", "image_url", Map.of("url", imageUrl))
+                                        Map.of("type", "image_url", "image_url", Map.of("url", imageData))
                                 )
                         )
                 )
         ));
 
-
+        OkHttpClient client = new OkHttpClient();
         okhttp3.MediaType mediaType = okhttp3.MediaType.get("application/json");
         okhttp3.RequestBody body = okhttp3.RequestBody.create(jsonPayload, mediaType);
 
         Request request = new Request.Builder()
                 .url("https://api.openai.com/v1/chat/completions")
                 .post(body)
-                .addHeader("Authorization", "Bearer " +openaiApiKey)
+                .addHeader("Authorization", "Bearer " + openaiApiKey)
                 .addHeader("Content-Type", "application/json")
                 .build();
 
@@ -222,6 +234,7 @@ public class ReportController {
             return ResponseEntity.ok(response.body().string());
         }
     }
+
     @GetMapping("/admin/me/profile")
     public ResponseEntity<?> getAdminProfileWithStats() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
